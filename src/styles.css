@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -5,27 +6,36 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
+ * Design system definition — Meu Perfume (ver. docs/PRD.md, seção 14).
  *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
+ * Direção: sobriedade funcional (tabelas, formulários, uso rápido no balcão)
+ * combinada a uma identidade elegante de perfumaria (Fraunces + paleta
+ * bone/wine/amber), evitando o "padrão genérico de interface gerada por IA".
  *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
+ * O @theme inline block mapeia as custom properties para classes Tailwind
+ * (ex: --color-wine -> bg-wine, text-wine, border-wine).
  *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Os blocos :root e .dark definem os valores reais em oklch (obrigatório).
+ * As cores de marca (bone/surface/ink/wine/amber/hairline) também ficam
+ * disponíveis como tokens brutos, além de alimentarem os papéis semânticos
+ * do shadcn (background/primary/accent/etc), porque o PRD referencia esses
+ * nomes diretamente ao descrever cada tela.
  */
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+
+  /* Raio pequeno (6px) em botões/inputs; maior (~12px) reservado a imagem de
+     produto e modais via rounded-2xl/rounded-3xl. Sem raio em tabelas/divisórias. */
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-2xl: calc(var(--radius) + 6px);
+  --radius-3xl: calc(var(--radius) + 10px);
   --radius-4xl: calc(var(--radius) + 16px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -59,77 +69,131 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Cores funcionais (seção 14.2) — nunca usar wine/amber para alertas operacionais */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+
+  /* Tokens de marca brutos (seção 14.2), para uso pontual fora dos papéis semânticos */
+  --color-bone: var(--bone);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-wine: var(--wine);
+  --color-amber: var(--amber);
+  --color-hairline: var(--hairline);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --radius: 0.375rem; /* 6px */
+
+  /* Paleta de marca (seção 14.2) */
+  --bone: oklch(0.93 0.016 82.792);
+  --surface: oklch(0.985 0.005 95.098);
+  --ink: oklch(0.267 0.013 51.617);
+  --ink-muted: oklch(0.498 0.023 72.313);
+  --wine: oklch(0.362 0.109 14.693);
+  --amber: oklch(0.629 0.11 82.849);
+  --hairline: oklch(0.876 0.021 81.777);
+
+  /* Cores funcionais */
+  --success: oklch(0.474 0.042 150.862);
+  --success-foreground: var(--surface);
+  --warning: oklch(0.587 0.13 56.773);
+  --warning-foreground: var(--surface);
+  --danger: oklch(0.443 0.127 23.866);
+  --danger-foreground: var(--surface);
+
+  /* Papéis semânticos (shadcn/ui) mapeados para a paleta acima */
+  --background: var(--bone);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--wine);
+  --primary-foreground: var(--surface);
+  --secondary: var(--surface);
+  --secondary-foreground: var(--wine);
+  --muted: var(--hairline);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--amber);
+  --accent-foreground: var(--ink);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--surface);
+  --border: var(--hairline);
+  --input: var(--hairline);
+  --ring: var(--wine);
+
+  /* Gráficos (seção 14.5): série única em wine, segunda série em amber */
+  --chart-1: var(--wine);
+  --chart-2: var(--amber);
+  --chart-3: var(--success);
+  --chart-4: var(--ink-muted);
+  --chart-5: var(--warning);
+
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--wine);
+  --sidebar-primary-foreground: var(--surface);
+  --sidebar-accent: var(--amber);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--hairline);
+  --sidebar-ring: var(--wine);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --bone: oklch(0.2 0.014 51.617);
+  --surface: oklch(0.257 0.013 51.617);
+  --ink: oklch(0.94 0.008 82.792);
+  --ink-muted: oklch(0.72 0.018 72.313);
+  --wine: oklch(0.52 0.12 14.693);
+  --amber: oklch(0.7 0.11 82.849);
+  --hairline: oklch(0.34 0.016 51.617);
+
+  --success: oklch(0.6 0.05 150.862);
+  --success-foreground: oklch(0.15 0.01 150);
+  --warning: oklch(0.68 0.13 56.773);
+  --warning-foreground: oklch(0.15 0.01 56);
+  --danger: oklch(0.6 0.13 23.866);
+  --danger-foreground: oklch(0.15 0.01 23);
+
+  --background: var(--bone);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--wine);
+  --primary-foreground: var(--surface);
+  --secondary: var(--surface);
+  --secondary-foreground: var(--wine);
+  --muted: var(--hairline);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--amber);
+  --accent-foreground: var(--bone);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--surface);
+  --border: var(--hairline);
+  --input: var(--hairline);
+  --ring: var(--wine);
+  --chart-1: var(--wine);
+  --chart-2: var(--amber);
+  --chart-3: var(--success);
+  --chart-4: var(--ink-muted);
+  --chart-5: var(--warning);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--wine);
+  --sidebar-primary-foreground: var(--surface);
+  --sidebar-accent: var(--amber);
+  --sidebar-accent-foreground: var(--bone);
+  --sidebar-border: var(--hairline);
+  --sidebar-ring: var(--wine);
 }
 
 @layer base {
@@ -140,5 +204,19 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  /* Colunas numéricas (preço, custo, quantidade) usam algarismos tabulares
+     para alinhamento correto em tabelas, como um livro-razão (seção 14.3/14.4). */
+  .tabular {
+    font-variant-numeric: tabular-nums;
   }
 }
