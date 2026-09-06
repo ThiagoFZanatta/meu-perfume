@@ -1,21 +1,14 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
-import { RequireRole } from "@/components/require-role";
-import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export const Route = createFileRoute("/vendedor")({
-  component: () => (
-    <RequireRole role="vendedor">
-      <VendedorDashboard />
-    </RequireRole>
-  ),
+export const Route = createFileRoute("/vendedor/")({
+  component: VendedorDashboard,
 });
 
 function useCatalog() {
@@ -36,7 +29,6 @@ function useCatalog() {
 }
 
 function VendedorDashboard() {
-  const { profile } = useAuth();
   const [search, setSearch] = useState("");
   const catalog = useCatalog();
 
@@ -49,13 +41,11 @@ function VendedorDashboard() {
     );
   }, [catalog.data, search]);
 
-  if (!profile) return null;
-
   return (
-    <DashboardShell profile={profile} navItems={[]}>
+    <div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Button size="lg" className="h-14 text-base" onClick={() => toast("Em breve")}>
-          Registrar Venda
+        <Button size="lg" className="h-14 text-base" asChild>
+          <Link to="/vendedor/vendas/nova">Registrar Venda</Link>
         </Button>
         <Button
           size="lg"
@@ -109,6 +99,6 @@ function VendedorDashboard() {
           ))
         )}
       </div>
-    </DashboardShell>
+    </div>
   );
 }
