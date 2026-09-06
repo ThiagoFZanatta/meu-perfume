@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { PurchaseForm } from "@/components/purchase-form";
 
@@ -9,7 +9,12 @@ export const Route = createFileRoute("/master/compras/nova")({
 function NovaCompraPage() {
   return (
     <div>
-      <h2 className="font-display text-2xl font-medium">Registrar compra</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-2xl font-medium">Registrar compra</h2>
+        <Link to="/master/compras/corrigir" className="text-sm text-muted-foreground underline">
+          Corrigir uma compra já registrada
+        </Link>
+      </div>
       <div className="mt-6">
         <PurchaseForm />
       </div>

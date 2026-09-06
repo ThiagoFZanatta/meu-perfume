@@ -420,6 +420,15 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: number;
       };
+      update_purchase_pricing: {
+        Args: {
+          p_purchase_id: string;
+          p_exchange_rate: number;
+          p_freight_cost_brl: number;
+          p_sale_prices: Json;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       profile_role: ProfileRole;

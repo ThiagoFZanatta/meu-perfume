@@ -18,6 +18,7 @@ import { Route as VendedorIndexRouteImport } from './routes/vendedor/index'
 import { Route as MasterCatalogoIndexRouteImport } from './routes/master/catalogo/index'
 import { Route as MasterCatalogoProductIdRouteImport } from './routes/master/catalogo/$productId'
 import { Route as MasterCatalogoNovoRouteImport } from './routes/master/catalogo/novo'
+import { Route as MasterComprasCorrigirRouteImport } from './routes/master/compras/corrigir'
 import { Route as MasterComprasNovaRouteImport } from './routes/master/compras/nova'
 import { Route as MasterVendasDevolucaoRouteImport } from './routes/master/vendas/devolucao'
 import { Route as VendedorVendasNovaRouteImport } from './routes/vendedor/vendas/nova'
@@ -67,6 +68,11 @@ const MasterCatalogoNovoRoute = MasterCatalogoNovoRouteImport.update({
   path: '/catalogo/novo',
   getParentRoute: () => MasterRouteRoute,
 } as any)
+const MasterComprasCorrigirRoute = MasterComprasCorrigirRouteImport.update({
+  id: '/compras/corrigir',
+  path: '/compras/corrigir',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
 const MasterComprasNovaRoute = MasterComprasNovaRouteImport.update({
   id: '/compras/nova',
   path: '/compras/nova',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/vendedor/': typeof VendedorIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
   '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
+  '/master/compras/corrigir': typeof MasterComprasCorrigirRoute
   '/master/compras/nova': typeof MasterComprasNovaRoute
   '/master/vendas/devolucao': typeof MasterVendasDevolucaoRoute
   '/vendedor/vendas/nova': typeof VendedorVendasNovaRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/vendedor': typeof VendedorIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
   '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
+  '/master/compras/corrigir': typeof MasterComprasCorrigirRoute
   '/master/compras/nova': typeof MasterComprasNovaRoute
   '/master/vendas/devolucao': typeof MasterVendasDevolucaoRoute
   '/vendedor/vendas/nova': typeof VendedorVendasNovaRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/vendedor/': typeof VendedorIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
   '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
+  '/master/compras/corrigir': typeof MasterComprasCorrigirRoute
   '/master/compras/nova': typeof MasterComprasNovaRoute
   '/master/vendas/devolucao': typeof MasterVendasDevolucaoRoute
   '/vendedor/vendas/nova': typeof VendedorVendasNovaRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/vendedor/'
     | '/master/catalogo/$productId'
     | '/master/catalogo/novo'
+    | '/master/compras/corrigir'
     | '/master/compras/nova'
     | '/master/vendas/devolucao'
     | '/vendedor/vendas/nova'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/vendedor'
     | '/master/catalogo/$productId'
     | '/master/catalogo/novo'
+    | '/master/compras/corrigir'
     | '/master/compras/nova'
     | '/master/vendas/devolucao'
     | '/vendedor/vendas/nova'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/vendedor/'
     | '/master/catalogo/$productId'
     | '/master/catalogo/novo'
+    | '/master/compras/corrigir'
     | '/master/compras/nova'
     | '/master/vendas/devolucao'
     | '/vendedor/vendas/nova'
@@ -239,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MasterCatalogoNovoRouteImport
       parentRoute: typeof MasterRouteRoute
     }
+    '/master/compras/corrigir': {
+      id: '/master/compras/corrigir'
+      path: '/compras/corrigir'
+      fullPath: '/master/compras/corrigir'
+      preLoaderRoute: typeof MasterComprasCorrigirRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
     '/master/compras/nova': {
       id: '/master/compras/nova'
       path: '/compras/nova'
@@ -267,6 +286,7 @@ interface MasterRouteRouteChildren {
   MasterIndexRoute: typeof MasterIndexRoute
   MasterCatalogoProductIdRoute: typeof MasterCatalogoProductIdRoute
   MasterCatalogoNovoRoute: typeof MasterCatalogoNovoRoute
+  MasterComprasCorrigirRoute: typeof MasterComprasCorrigirRoute
   MasterComprasNovaRoute: typeof MasterComprasNovaRoute
   MasterVendasDevolucaoRoute: typeof MasterVendasDevolucaoRoute
   MasterCatalogoIndexRoute: typeof MasterCatalogoIndexRoute
@@ -276,6 +296,7 @@ const MasterRouteRouteChildren: MasterRouteRouteChildren = {
   MasterIndexRoute: MasterIndexRoute,
   MasterCatalogoProductIdRoute: MasterCatalogoProductIdRoute,
   MasterCatalogoNovoRoute: MasterCatalogoNovoRoute,
+  MasterComprasCorrigirRoute: MasterComprasCorrigirRoute,
   MasterComprasNovaRoute: MasterComprasNovaRoute,
   MasterVendasDevolucaoRoute: MasterVendasDevolucaoRoute,
   MasterCatalogoIndexRoute: MasterCatalogoIndexRoute,
