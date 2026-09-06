@@ -10,33 +10,63 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MasterRouteImport } from './routes/master'
+import { Route as VendedorRouteImport } from './routes/vendedor'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MasterRoute = MasterRouteImport.update({
+  id: '/master',
+  path: '/master',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VendedorRoute = VendedorRouteImport.update({
+  id: '/vendedor',
+  path: '/vendedor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/master': typeof MasterRoute
+  '/vendedor': typeof VendedorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/master': typeof MasterRoute
+  '/vendedor': typeof VendedorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/master': typeof MasterRoute
+  '/vendedor': typeof VendedorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/login' | '/master' | '/vendedor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/login' | '/master' | '/vendedor'
+  id: '__root__' | '/' | '/login' | '/master' | '/vendedor'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  MasterRoute: typeof MasterRoute
+  VendedorRoute: typeof VendedorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +78,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/master': {
+      id: '/master'
+      path: '/master'
+      fullPath: '/master'
+      preLoaderRoute: typeof MasterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vendedor': {
+      id: '/vendedor'
+      path: '/vendedor'
+      fullPath: '/vendedor'
+      preLoaderRoute: typeof VendedorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  MasterRoute: MasterRoute,
+  VendedorRoute: VendedorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
