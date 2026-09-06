@@ -392,6 +392,14 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: number;
       };
+      delete_purchase: {
+        Args: { p_purchase_id: string };
+        Returns: undefined;
+      };
+      delete_sale: {
+        Args: { p_sale_id: string };
+        Returns: undefined;
+      };
       is_master: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
@@ -404,9 +412,22 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      return_sale_items: {
+        Args: { p_sale_id: string; p_items: Json };
+        Returns: undefined;
+      };
       seller_edit_window_hours: {
         Args: Record<PropertyKey, never>;
         Returns: number;
+      };
+      update_purchase_pricing: {
+        Args: {
+          p_purchase_id: string;
+          p_exchange_rate: number;
+          p_freight_cost_brl: number;
+          p_sale_prices: Json;
+        };
+        Returns: undefined;
       };
     };
     Enums: {
