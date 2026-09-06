@@ -23,7 +23,7 @@
 ### 4. Autenticação e redirecionamento por papel (RF01)
 - `src/routes/login.tsx` — Tela 1: e-mail/senha, "Esqueci minha senha" (via `resetPasswordForEmail`), estados de vazio/erro/carregando conforme especificado.
 - `src/components/require-role.tsx` — guarda de rota: sem sessão → `/login`; papel errado para a rota → redireciona para a home do papel correto (bloqueia acesso direto via URL, RF02).
-- `src/routes/master.tsx` (Tela 2) e `src/routes/vendedor.tsx` (Tela 3) — shells dos dois dashboards, com dados reais (contagem de produtos, estoque baixo, encomendas em aberto para o master; catálogo com busca para o vendedor via `products_catalog_v`).
+- `src/routes/master/route.tsx` (layout do master, com `DashboardShell` + nav) e `src/routes/vendedor.tsx` (Tela 3) — shells dos dashboards, com dados reais (contagem de produtos, estoque baixo, encomendas em aberto para o master; catálogo com busca para o vendedor via `products_catalog_v`).
 - `src/lib/auth.ts` — hooks `useSession`/`useProfile`/`useAuth` (React Query + `onAuthStateChange`).
 
 ### 5. Bootstrap do primeiro usuário — decisão técnica
@@ -78,24 +78,33 @@ direta à API (RF10). Isso tem uma consequência que **quem implementar RF07
      a view `sales_seller_v` (já filtrada por `seller_id = auth.uid()` e sem
      `commission_amount`), nunca a tabela base `sales`.
 
+### 10. RF03 — Catálogo de Produtos (Telas 4 e 5)
+- `src/routes/master.tsx` virou um layout de pasta (`src/routes/master/route.tsx` + `index.tsx`), para acomodar as novas sub-rotas — o item de nav "Catálogo" agora é um link real; os demais continuam como placeholder ("Em breve") até suas telas existirem.
+- `src/routes/master/catalogo/index.tsx` (Tela 4): grade de produtos com imagem, nome, marca, ml, estoque, custo e preço de venda; busca por nome/marca; filtro por gênero; ordenação padrão por estoque baixo primeiro; oculta inativos por padrão com um toggle "Mostrar inativos" (badge visual "inativo" quando exibidos); estados de vazio/erro/carregando.
+- `src/routes/master/catalogo/novo.tsx` e `.../$productId.tsx` (Tela 5): cadastro e edição usando o mesmo `src/components/product-form.tsx` — nome, marca, gênero, ml e markup obrigatórios; descrição opcional; upload de imagem para o Storage; toggle "Produto ativo" visível só na edição (todo produto novo nasce ativo). Custo e preço de venda **não** são definidos aqui, conforme RF04/RF06 — ficam com o valor padrão (`0`) até a primeira compra.
+- Bucket de Storage `products` criado via migration `20260906120000_product_images_storage.sql`: leitura pública (a imagem não é dado sensível — aparece também no catálogo do vendedor), escrita/atualização/exclusão restritas a `is_master()`.
+- **Padrão de geração de `id` client-side**, já usado para `sales` (seção 9), reaproveitado aqui: o `id` do produto é gerado com `crypto.randomUUID()` antes do insert, para poder montar o caminho da imagem no Storage (`{id}/{timestamp}.{ext}`) antes de a linha existir na tabela.
+- Dashboard do master (Tela 2) ganhou um link real "Cadastrar produto" no estado vazio, agora que o Catálogo existe.
+
 ## Critérios de aceite do PRD atendidos nesta entrega
 
 - RF01: login via Supabase Auth; redirecionamento por papel após login; sem autocadastro público (exceto bootstrap do primeiro usuário, decisão documentada acima).
 - RF02 (parcial): tentativa de acesso direto a `/master` por um vendedor (ou vice-versa) é bloqueada e redirecionada; a Tela 11 (gestão de usuários) ainda não foi construída.
 - RF10: testado diretamente — `products_catalog_v` não expõe `current_unit_cost_brl`/`markup_percent`; a tabela base `products` só é lida por `is_master()`.
 - RNF de auditoria mínima: `created_by`/`created_at` com default automático; `updated_at`/`updated_by` preenchidos via trigger em correções de `purchases`/`sales` (RF13).
+- RF03: produto não pode ser salvo sem nome, marca, gênero, ml e markup (validação client-side, com as mesmas colunas `not null`/`check` no banco como garantia); inativar não apaga histórico (RLS/consultas de `purchases`/`sales` continuam funcionando via `product_id`, mesmo com `products.active = false`).
 
 ## Pendências / próximos passos (ordem sugerida pelo roadmap, seção 6/12)
 
-1. RF03 — Catálogo de Produtos (Telas 4 e 5): CRUD de produtos, upload de imagem (Supabase Storage), inativação.
-2. RF04/RF06 — Registrar Compra (Tela 6): cálculo de custo/rateio de frete, sugestão de preço por markup — melhor implementado como função de banco (RPC transacional) para garantir atomicidade com a atualização de estoque.
-3. RF07 — Registrar Venda (Tela 8), incluindo cálculo de comissão. **Seguir o padrão da seção 9 acima** ao inserir em `sales` como vendedor.
-4. RF13/RF14 — Edição/estorno de lançamentos e devolução de venda (Tela 12) como RPCs que revertem estoque/comissão corretamente. **Seguir o padrão da seção 9 acima** ao atualizar/excluir em `sales` como vendedor.
-5. RF08/RF09 — Encomendas e Relatórios de giro.
-6. RF02 completo — Tela 11 (gestão de usuários), via função server-side com `supabaseAdmin` (service role) chamando `auth.admin.createUser`.
+1. RF04/RF06 — Registrar Compra (Tela 6): cálculo de custo/rateio de frete, sugestão de preço por markup — melhor implementado como função de banco (RPC transacional) para garantir atomicidade com a atualização de estoque.
+2. RF07 — Registrar Venda (Tela 8), incluindo cálculo de comissão. **Seguir o padrão da seção 9 acima** ao inserir em `sales` como vendedor.
+3. RF13/RF14 — Edição/estorno de lançamentos e devolução de venda (Tela 12) como RPCs que revertem estoque/comissão corretamente. **Seguir o padrão da seção 9 acima** ao atualizar/excluir em `sales` como vendedor.
+4. RF08/RF09 — Encomendas e Relatórios de giro.
+5. RF02 completo — Tela 11 (gestão de usuários), via função server-side com `supabaseAdmin` (service role) chamando `auth.admin.createUser`.
+6. RF03 — pendência menor: ao trocar a imagem de um produto na edição, o arquivo antigo não é removido do Storage (fica órfão). Não é um problema funcional agora (bucket pequeno), mas vale limpar (`storage.remove`) quando o módulo de Compras/Estoque estiver pronto e houver tempo para revisar.
 
 ## Riscos e observações
 
 - **Ambiente de build**: o registro npm privado da Lovable (`europe-west1-npm.pkg.dev`) não é alcançável a partir deste sandbox do Claude Code; a instalação de dependências para validação local foi feita via registro público do npm (não commitado). `bun.lock` continua sendo a fonte da verdade para o pipeline real da Lovable.
 - **Validação feita nesta sessão**: `tsc --noEmit` limpo, `eslint` limpo nos arquivos novos/alterados, `vite build` (build de produção completo, incluindo o worker Cloudflare) concluído com sucesso, e a tela de login testada visualmente via Playwright (desktop e mobile) — confirma paleta, tipografia e estados. A função `needs_bootstrap()` foi validada diretamente no banco (retorna `true` com o banco vazio).
-- **Não testado**: o fluxo de login/bootstrap ponta a ponta em navegador contra o Supabase real, porque o proxy de rede deste sandbox impediu o Chromium headless de alcançar `*.supabase.co` de forma confiável. Recomenda-se testar esse fluxo no preview da própria Lovable (ou em produção) antes de considerar o RF01 encerrado.
+- **Não testado**: o fluxo de login/bootstrap ponta a ponta em navegador contra o Supabase real, porque o proxy de rede deste sandbox impediu o Chromium headless de alcançar `*.supabase.co` de forma confiável. Recomenda-se testar esse fluxo no preview da própria Lovable (ou em produção) antes de considerar o RF01 encerrado. A mesma limitação vale para o RF03: o formulário de produto (Tela 5) foi validado visualmente via Playwright (renderização, campos, validação de layout), o redirecionamento de `/master/catalogo` para `/login` quando não autenticado foi confirmado, mas o fluxo completo de criar/editar/inativar um produto (incluindo upload de imagem) contra o banco real não foi exercido neste sandbox — recomenda-se testar no preview da Lovable antes de considerar o RF03 encerrado.

@@ -11,8 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as MasterRouteImport } from './routes/master'
+import { Route as MasterRouteRouteImport } from './routes/master/route'
 import { Route as VendedorRouteImport } from './routes/vendedor'
+import { Route as MasterIndexRouteImport } from './routes/master/index'
+import { Route as MasterCatalogoIndexRouteImport } from './routes/master/catalogo/index'
+import { Route as MasterCatalogoProductIdRouteImport } from './routes/master/catalogo/$productId'
+import { Route as MasterCatalogoNovoRouteImport } from './routes/master/catalogo/novo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -24,7 +28,7 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MasterRoute = MasterRouteImport.update({
+const MasterRouteRoute = MasterRouteRouteImport.update({
   id: '/master',
   path: '/master',
   getParentRoute: () => rootRouteImport,
@@ -34,38 +38,93 @@ const VendedorRoute = VendedorRouteImport.update({
   path: '/vendedor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MasterIndexRoute = MasterIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
+const MasterCatalogoIndexRoute = MasterCatalogoIndexRouteImport.update({
+  id: '/catalogo/',
+  path: '/catalogo/',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
+const MasterCatalogoProductIdRoute = MasterCatalogoProductIdRouteImport.update({
+  id: '/catalogo/$productId',
+  path: '/catalogo/$productId',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
+const MasterCatalogoNovoRoute = MasterCatalogoNovoRouteImport.update({
+  id: '/catalogo/novo',
+  path: '/catalogo/novo',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/master': typeof MasterRouteRouteWithChildren
   '/login': typeof LoginRoute
-  '/master': typeof MasterRoute
   '/vendedor': typeof VendedorRoute
+  '/master/': typeof MasterIndexRoute
+  '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
+  '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
+  '/master/catalogo/': typeof MasterCatalogoIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/master': typeof MasterRoute
   '/vendedor': typeof VendedorRoute
+  '/master': typeof MasterIndexRoute
+  '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
+  '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
+  '/master/catalogo': typeof MasterCatalogoIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/master': typeof MasterRouteRouteWithChildren
   '/login': typeof LoginRoute
-  '/master': typeof MasterRoute
   '/vendedor': typeof VendedorRoute
+  '/master/': typeof MasterIndexRoute
+  '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
+  '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
+  '/master/catalogo/': typeof MasterCatalogoIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/master' | '/vendedor'
+  fullPaths:
+    | '/'
+    | '/master'
+    | '/login'
+    | '/vendedor'
+    | '/master/'
+    | '/master/catalogo/$productId'
+    | '/master/catalogo/novo'
+    | '/master/catalogo/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/master' | '/vendedor'
-  id: '__root__' | '/' | '/login' | '/master' | '/vendedor'
+  to:
+    | '/'
+    | '/login'
+    | '/vendedor'
+    | '/master'
+    | '/master/catalogo/$productId'
+    | '/master/catalogo/novo'
+    | '/master/catalogo'
+  id:
+    | '__root__'
+    | '/'
+    | '/master'
+    | '/login'
+    | '/vendedor'
+    | '/master/'
+    | '/master/catalogo/$productId'
+    | '/master/catalogo/novo'
+    | '/master/catalogo/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MasterRouteRoute: typeof MasterRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
-  MasterRoute: typeof MasterRoute
   VendedorRoute: typeof VendedorRoute
 }
 
@@ -89,7 +148,7 @@ declare module '@tanstack/react-router' {
       id: '/master'
       path: '/master'
       fullPath: '/master'
-      preLoaderRoute: typeof MasterRouteImport
+      preLoaderRoute: typeof MasterRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/vendedor': {
@@ -99,13 +158,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VendedorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/master/': {
+      id: '/master/'
+      path: '/'
+      fullPath: '/master/'
+      preLoaderRoute: typeof MasterIndexRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
+    '/master/catalogo/': {
+      id: '/master/catalogo/'
+      path: '/catalogo'
+      fullPath: '/master/catalogo/'
+      preLoaderRoute: typeof MasterCatalogoIndexRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
+    '/master/catalogo/$productId': {
+      id: '/master/catalogo/$productId'
+      path: '/catalogo/$productId'
+      fullPath: '/master/catalogo/$productId'
+      preLoaderRoute: typeof MasterCatalogoProductIdRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
+    '/master/catalogo/novo': {
+      id: '/master/catalogo/novo'
+      path: '/catalogo/novo'
+      fullPath: '/master/catalogo/novo'
+      preLoaderRoute: typeof MasterCatalogoNovoRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
   }
 }
 
+interface MasterRouteRouteChildren {
+  MasterIndexRoute: typeof MasterIndexRoute
+  MasterCatalogoProductIdRoute: typeof MasterCatalogoProductIdRoute
+  MasterCatalogoNovoRoute: typeof MasterCatalogoNovoRoute
+  MasterCatalogoIndexRoute: typeof MasterCatalogoIndexRoute
+}
+
+const MasterRouteRouteChildren: MasterRouteRouteChildren = {
+  MasterIndexRoute: MasterIndexRoute,
+  MasterCatalogoProductIdRoute: MasterCatalogoProductIdRoute,
+  MasterCatalogoNovoRoute: MasterCatalogoNovoRoute,
+  MasterCatalogoIndexRoute: MasterCatalogoIndexRoute,
+}
+
+const MasterRouteRouteWithChildren = MasterRouteRoute._addFileChildren(
+  MasterRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MasterRouteRoute: MasterRouteRouteWithChildren,
   LoginRoute: LoginRoute,
-  MasterRoute: MasterRoute,
   VendedorRoute: VendedorRoute,
 }
 export const routeTree = rootRouteImport
