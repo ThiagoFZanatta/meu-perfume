@@ -38,7 +38,12 @@ function MasterDashboard() {
 
   return (
     <div>
-      <h2 className="font-display text-2xl font-medium">Visão geral</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-2xl font-medium">Visão geral</h2>
+        <Button asChild>
+          <Link to="/master/compras/nova">Registrar Compra</Link>
+        </Button>
+      </div>
 
       {summary.isPending ? (
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
