@@ -376,6 +376,10 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      is_own_sale: {
+        Args: { p_sale_id: string; p_within_edit_window?: boolean };
+        Returns: boolean;
+      };
       needs_bootstrap: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;

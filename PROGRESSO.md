@@ -37,6 +37,47 @@ O PRD diz que "não há autocadastro público — novos usuários só são criad
 ### 7. Tipos TypeScript
 - `src/integrations/supabase/types.ts` reescrito manualmente a partir da migration (sem CLI do Supabase disponível neste ambiente). **Atenção:** ao alterar o schema, atualizar este arquivo junto — não há geração automática configurada.
 
+### 8. Refino de RLS: `is_own_sale()` (migration `20260906090000_sale_items_is_own_sale.sql`)
+As 4 políticas de `sale_items` (select/insert/update/delete) repetiam a mesma
+subquery `exists (select 1 from sales s where s.id = sale_id and s.seller_id =
+auth.uid() ...)`, variando só a checagem da janela de correção (RF13). Foi
+extraído um único helper:
+
+```sql
+public.is_own_sale(p_sale_id uuid, p_within_edit_window boolean default false)
+```
+
+`select`/`insert` chamam `is_own_sale(sale_id)` (sem checar janela);
+`update`/`delete` chamam `is_own_sale(sale_id, true)` (exige estar dentro de
+`seller_edit_window_hours()`). Reduz duplicação e centraliza a regra "esta
+venda é minha" em um único lugar, caso ela mude no futuro.
+
+### 9. Padrão obrigatório: leitura pós-insert/update em `sales` (vendedor)
+A tabela base `sales` só permite `SELECT` para `is_master()` (item 3, acima) —
+é assim que `commission_amount` fica escondido do vendedor mesmo em chamada
+direta à API (RF10). Isso tem uma consequência que **quem implementar RF07
+(Registrar Venda) e RF13 (correção) precisa seguir**:
+
+- O Postgres aplica a política de `SELECT` também ao `RETURNING` de um
+  `INSERT`/`UPDATE`/`DELETE`. Como o `supabase-js` ativa `RETURNING` sempre
+  que `.select()` é encadeado após `.insert()`/`.update()`/`.delete()`, um
+  vendedor que faça `supabase.from("sales").insert(payload).select()` recebe
+  `data: []` (silencioso, sem erro) mesmo com o insert tendo funcionado —
+  porque a linha inserida não passa na política de `SELECT` da tabela base.
+- **Padrão a seguir:**
+  1. Gerar o `id` da venda no cliente com `crypto.randomUUID()` antes do
+     insert, para não depender do valor de volta do banco.
+  2. Ao inserir/atualizar/excluir em `sales` como vendedor, **não encadear
+     `.select()`** — só checar `error`. Isso mantém o `Prefer: return=minimal`
+     (comportamento padrão do `supabase-js` sem `.select()`), que não aciona a
+     política de `SELECT`.
+  3. `sale_items` não tem essa restrição (RLS permite ao vendedor ler os
+     próprios itens), então `.select()` pode ser encadeado normalmente ali.
+  4. Sempre que o vendedor precisar reler dados de `sales` depois (ex: listar
+     vendas recentes para permitir a correção dentro das 2h — RF13), consultar
+     a view `sales_seller_v` (já filtrada por `seller_id = auth.uid()` e sem
+     `commission_amount`), nunca a tabela base `sales`.
+
 ## Critérios de aceite do PRD atendidos nesta entrega
 
 - RF01: login via Supabase Auth; redirecionamento por papel após login; sem autocadastro público (exceto bootstrap do primeiro usuário, decisão documentada acima).
@@ -48,8 +89,8 @@ O PRD diz que "não há autocadastro público — novos usuários só são criad
 
 1. RF03 — Catálogo de Produtos (Telas 4 e 5): CRUD de produtos, upload de imagem (Supabase Storage), inativação.
 2. RF04/RF06 — Registrar Compra (Tela 6): cálculo de custo/rateio de frete, sugestão de preço por markup — melhor implementado como função de banco (RPC transacional) para garantir atomicidade com a atualização de estoque.
-3. RF07 — Registrar Venda (Tela 8), incluindo cálculo de comissão.
-4. RF13/RF14 — Edição/estorno de lançamentos e devolução de venda (Tela 12) como RPCs que revertem estoque/comissão corretamente.
+3. RF07 — Registrar Venda (Tela 8), incluindo cálculo de comissão. **Seguir o padrão da seção 9 acima** ao inserir em `sales` como vendedor.
+4. RF13/RF14 — Edição/estorno de lançamentos e devolução de venda (Tela 12) como RPCs que revertem estoque/comissão corretamente. **Seguir o padrão da seção 9 acima** ao atualizar/excluir em `sales` como vendedor.
 5. RF08/RF09 — Encomendas e Relatórios de giro.
 6. RF02 completo — Tela 11 (gestão de usuários), via função server-side com `supabaseAdmin` (service role) chamando `auth.admin.createUser`.
 
