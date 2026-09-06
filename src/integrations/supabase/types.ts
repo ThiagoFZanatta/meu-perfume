@@ -372,6 +372,15 @@ export type Database = {
       };
     };
     Functions: {
+      confirm_purchase: {
+        Args: {
+          p_purchase_date: string;
+          p_exchange_rate: number;
+          p_freight_cost_brl: number;
+          p_items: Json;
+        };
+        Returns: string;
+      };
       is_master: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;

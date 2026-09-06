@@ -17,6 +17,7 @@ import { Route as MasterIndexRouteImport } from './routes/master/index'
 import { Route as MasterCatalogoIndexRouteImport } from './routes/master/catalogo/index'
 import { Route as MasterCatalogoProductIdRouteImport } from './routes/master/catalogo/$productId'
 import { Route as MasterCatalogoNovoRouteImport } from './routes/master/catalogo/novo'
+import { Route as MasterComprasNovaRouteImport } from './routes/master/compras/nova'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +59,11 @@ const MasterCatalogoNovoRoute = MasterCatalogoNovoRouteImport.update({
   path: '/catalogo/novo',
   getParentRoute: () => MasterRouteRoute,
 } as any)
+const MasterComprasNovaRoute = MasterComprasNovaRouteImport.update({
+  id: '/compras/nova',
+  path: '/compras/nova',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/master/': typeof MasterIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
   '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
+  '/master/compras/nova': typeof MasterComprasNovaRoute
   '/master/catalogo/': typeof MasterCatalogoIndexRoute
 }
 export interface FileRoutesByTo {
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/master': typeof MasterIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
   '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
+  '/master/compras/nova': typeof MasterComprasNovaRoute
   '/master/catalogo': typeof MasterCatalogoIndexRoute
 }
 export interface FileRoutesById {
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/master/': typeof MasterIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
   '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
+  '/master/compras/nova': typeof MasterComprasNovaRoute
   '/master/catalogo/': typeof MasterCatalogoIndexRoute
 }
 export interface FileRouteTypes {
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/master/'
     | '/master/catalogo/$productId'
     | '/master/catalogo/novo'
+    | '/master/compras/nova'
     | '/master/catalogo/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/master'
     | '/master/catalogo/$productId'
     | '/master/catalogo/novo'
+    | '/master/compras/nova'
     | '/master/catalogo'
   id:
     | '__root__'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/master/'
     | '/master/catalogo/$productId'
     | '/master/catalogo/novo'
+    | '/master/compras/nova'
     | '/master/catalogo/'
   fileRoutesById: FileRoutesById
 }
@@ -186,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MasterCatalogoNovoRouteImport
       parentRoute: typeof MasterRouteRoute
     }
+    '/master/compras/nova': {
+      id: '/master/compras/nova'
+      path: '/compras/nova'
+      fullPath: '/master/compras/nova'
+      preLoaderRoute: typeof MasterComprasNovaRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
   }
 }
 
@@ -193,6 +212,7 @@ interface MasterRouteRouteChildren {
   MasterIndexRoute: typeof MasterIndexRoute
   MasterCatalogoProductIdRoute: typeof MasterCatalogoProductIdRoute
   MasterCatalogoNovoRoute: typeof MasterCatalogoNovoRoute
+  MasterComprasNovaRoute: typeof MasterComprasNovaRoute
   MasterCatalogoIndexRoute: typeof MasterCatalogoIndexRoute
 }
 
@@ -200,6 +220,7 @@ const MasterRouteRouteChildren: MasterRouteRouteChildren = {
   MasterIndexRoute: MasterIndexRoute,
   MasterCatalogoProductIdRoute: MasterCatalogoProductIdRoute,
   MasterCatalogoNovoRoute: MasterCatalogoNovoRoute,
+  MasterComprasNovaRoute: MasterComprasNovaRoute,
   MasterCatalogoIndexRoute: MasterCatalogoIndexRoute,
 }
 
