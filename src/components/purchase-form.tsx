@@ -100,6 +100,18 @@ export function PurchaseForm() {
     setItems((prev) => prev.map((item) => (item.key === key ? { ...item, ...patch } : item)));
   }
 
+  function handleProductChange(key: string, productId: string) {
+    const alreadyUsed = items.some((item) => item.key !== key && item.productId === productId);
+    if (alreadyUsed) {
+      setError(
+        "Este produto já foi adicionado nesta compra — ajuste a quantidade na linha existente em vez de duplicar.",
+      );
+      return;
+    }
+    setError(null);
+    updateItem(key, { productId });
+  }
+
   function addItem() {
     setItems((prev) => [...prev, emptyRow()]);
   }
@@ -221,8 +233,8 @@ export function PurchaseForm() {
                 <TableRow key={item.key}>
                   <TableCell>
                     <Select
-                      {...(item.productId ? { value: item.productId } : {})}
-                      onValueChange={(v) => updateItem(item.key, { productId: v })}
+                      value={item.productId}
+                      onValueChange={(v) => handleProductChange(item.key, v)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione..." />
