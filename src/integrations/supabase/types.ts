@@ -392,6 +392,14 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: number;
       };
+      delete_purchase: {
+        Args: { p_purchase_id: string };
+        Returns: undefined;
+      };
+      delete_sale: {
+        Args: { p_sale_id: string };
+        Returns: undefined;
+      };
       is_master: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
@@ -403,6 +411,10 @@ export type Database = {
       needs_bootstrap: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
+      };
+      return_sale_items: {
+        Args: { p_sale_id: string; p_items: Json };
+        Returns: undefined;
       };
       seller_edit_window_hours: {
         Args: Record<PropertyKey, never>;

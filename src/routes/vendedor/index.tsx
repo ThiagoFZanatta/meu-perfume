@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SellerRecentSales } from "@/components/seller-recent-sales";
 
 export const Route = createFileRoute("/vendedor/")({
   component: VendedorDashboard,
@@ -99,6 +100,8 @@ function VendedorDashboard() {
           ))
         )}
       </div>
+
+      <SellerRecentSales />
     </div>
   );
 }
