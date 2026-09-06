@@ -1,29 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
-import { RequireRole } from "@/components/require-role";
-import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/master")({
-  component: () => (
-    <RequireRole role="master">
-      <MasterDashboard />
-    </RequireRole>
-  ),
+export const Route = createFileRoute("/master/")({
+  component: MasterDashboard,
 });
-
-const NAV_ITEMS = [
-  "Catálogo",
-  "Compras",
-  "Estoque",
-  "Vendas",
-  "Encomendas",
-  "Relatórios",
-  "Usuários",
-];
 
 function useMasterSummary() {
   return useQuery({
@@ -48,15 +32,12 @@ function useMasterSummary() {
 }
 
 function MasterDashboard() {
-  const { profile } = useAuth();
   const summary = useMasterSummary();
-
-  if (!profile) return null;
 
   const hasData = (summary.data?.totalProducts ?? 0) > 0;
 
   return (
-    <DashboardShell profile={profile} navItems={NAV_ITEMS}>
+    <div>
       <h2 className="font-display text-2xl font-medium">Visão geral</h2>
 
       {summary.isPending ? (
@@ -73,6 +54,9 @@ function MasterDashboard() {
           <p className="mt-1 text-sm text-muted-foreground">
             Cadastre o primeiro produto para começar a controlar estoque e compras.
           </p>
+          <Button asChild className="mt-4">
+            <Link to="/master/catalogo/novo">Cadastrar produto</Link>
+          </Button>
         </div>
       ) : (
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -85,7 +69,7 @@ function MasterDashboard() {
           <SummaryCard label="Encomendas em aberto" value={summary.data!.openOrders} />
         </div>
       )}
-    </DashboardShell>
+    </div>
   );
 }
 
