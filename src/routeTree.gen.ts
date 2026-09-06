@@ -12,12 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MasterRouteRouteImport } from './routes/master/route'
-import { Route as VendedorRouteImport } from './routes/vendedor'
+import { Route as VendedorRouteRouteImport } from './routes/vendedor/route'
 import { Route as MasterIndexRouteImport } from './routes/master/index'
+import { Route as VendedorIndexRouteImport } from './routes/vendedor/index'
 import { Route as MasterCatalogoIndexRouteImport } from './routes/master/catalogo/index'
 import { Route as MasterCatalogoProductIdRouteImport } from './routes/master/catalogo/$productId'
 import { Route as MasterCatalogoNovoRouteImport } from './routes/master/catalogo/novo'
 import { Route as MasterComprasNovaRouteImport } from './routes/master/compras/nova'
+import { Route as VendedorVendasNovaRouteImport } from './routes/vendedor/vendas/nova'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,7 +36,7 @@ const MasterRouteRoute = MasterRouteRouteImport.update({
   path: '/master',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VendedorRoute = VendedorRouteImport.update({
+const VendedorRouteRoute = VendedorRouteRouteImport.update({
   id: '/vendedor',
   path: '/vendedor',
   getParentRoute: () => rootRouteImport,
@@ -43,6 +45,11 @@ const MasterIndexRoute = MasterIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => MasterRouteRoute,
+} as any)
+const VendedorIndexRoute = VendedorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VendedorRouteRoute,
 } as any)
 const MasterCatalogoIndexRoute = MasterCatalogoIndexRouteImport.update({
   id: '/catalogo/',
@@ -64,38 +71,48 @@ const MasterComprasNovaRoute = MasterComprasNovaRouteImport.update({
   path: '/compras/nova',
   getParentRoute: () => MasterRouteRoute,
 } as any)
+const VendedorVendasNovaRoute = VendedorVendasNovaRouteImport.update({
+  id: '/vendas/nova',
+  path: '/vendas/nova',
+  getParentRoute: () => VendedorRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/master': typeof MasterRouteRouteWithChildren
+  '/vendedor': typeof VendedorRouteRouteWithChildren
   '/login': typeof LoginRoute
-  '/vendedor': typeof VendedorRoute
   '/master/': typeof MasterIndexRoute
+  '/vendedor/': typeof VendedorIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
   '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
   '/master/compras/nova': typeof MasterComprasNovaRoute
+  '/vendedor/vendas/nova': typeof VendedorVendasNovaRoute
   '/master/catalogo/': typeof MasterCatalogoIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/vendedor': typeof VendedorRoute
   '/master': typeof MasterIndexRoute
+  '/vendedor': typeof VendedorIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
   '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
   '/master/compras/nova': typeof MasterComprasNovaRoute
+  '/vendedor/vendas/nova': typeof VendedorVendasNovaRoute
   '/master/catalogo': typeof MasterCatalogoIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/master': typeof MasterRouteRouteWithChildren
+  '/vendedor': typeof VendedorRouteRouteWithChildren
   '/login': typeof LoginRoute
-  '/vendedor': typeof VendedorRoute
   '/master/': typeof MasterIndexRoute
+  '/vendedor/': typeof VendedorIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
   '/master/catalogo/novo': typeof MasterCatalogoNovoRoute
   '/master/compras/nova': typeof MasterComprasNovaRoute
+  '/vendedor/vendas/nova': typeof VendedorVendasNovaRoute
   '/master/catalogo/': typeof MasterCatalogoIndexRoute
 }
 export interface FileRouteTypes {
@@ -103,41 +120,46 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/master'
-    | '/login'
     | '/vendedor'
+    | '/login'
     | '/master/'
+    | '/vendedor/'
     | '/master/catalogo/$productId'
     | '/master/catalogo/novo'
     | '/master/compras/nova'
+    | '/vendedor/vendas/nova'
     | '/master/catalogo/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
-    | '/vendedor'
     | '/master'
+    | '/vendedor'
     | '/master/catalogo/$productId'
     | '/master/catalogo/novo'
     | '/master/compras/nova'
+    | '/vendedor/vendas/nova'
     | '/master/catalogo'
   id:
     | '__root__'
     | '/'
     | '/master'
-    | '/login'
     | '/vendedor'
+    | '/login'
     | '/master/'
+    | '/vendedor/'
     | '/master/catalogo/$productId'
     | '/master/catalogo/novo'
     | '/master/compras/nova'
+    | '/vendedor/vendas/nova'
     | '/master/catalogo/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MasterRouteRoute: typeof MasterRouteRouteWithChildren
+  VendedorRouteRoute: typeof VendedorRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
-  VendedorRoute: typeof VendedorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -167,7 +189,7 @@ declare module '@tanstack/react-router' {
       id: '/vendedor'
       path: '/vendedor'
       fullPath: '/vendedor'
-      preLoaderRoute: typeof VendedorRouteImport
+      preLoaderRoute: typeof VendedorRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/master/': {
@@ -176,6 +198,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/master/'
       preLoaderRoute: typeof MasterIndexRouteImport
       parentRoute: typeof MasterRouteRoute
+    }
+    '/vendedor/': {
+      id: '/vendedor/'
+      path: '/'
+      fullPath: '/vendedor/'
+      preLoaderRoute: typeof VendedorIndexRouteImport
+      parentRoute: typeof VendedorRouteRoute
     }
     '/master/catalogo/': {
       id: '/master/catalogo/'
@@ -205,6 +234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MasterComprasNovaRouteImport
       parentRoute: typeof MasterRouteRoute
     }
+    '/vendedor/vendas/nova': {
+      id: '/vendedor/vendas/nova'
+      path: '/vendas/nova'
+      fullPath: '/vendedor/vendas/nova'
+      preLoaderRoute: typeof VendedorVendasNovaRouteImport
+      parentRoute: typeof VendedorRouteRoute
+    }
   }
 }
 
@@ -228,11 +264,25 @@ const MasterRouteRouteWithChildren = MasterRouteRoute._addFileChildren(
   MasterRouteRouteChildren,
 )
 
+interface VendedorRouteRouteChildren {
+  VendedorIndexRoute: typeof VendedorIndexRoute
+  VendedorVendasNovaRoute: typeof VendedorVendasNovaRoute
+}
+
+const VendedorRouteRouteChildren: VendedorRouteRouteChildren = {
+  VendedorIndexRoute: VendedorIndexRoute,
+  VendedorVendasNovaRoute: VendedorVendasNovaRoute,
+}
+
+const VendedorRouteRouteWithChildren = VendedorRouteRoute._addFileChildren(
+  VendedorRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MasterRouteRoute: MasterRouteRouteWithChildren,
+  VendedorRouteRoute: VendedorRouteRouteWithChildren,
   LoginRoute: LoginRoute,
-  VendedorRoute: VendedorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

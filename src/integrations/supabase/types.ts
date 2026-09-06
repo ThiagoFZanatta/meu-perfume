@@ -381,6 +381,17 @@ export type Database = {
         };
         Returns: string;
       };
+      confirm_sale: {
+        Args: {
+          p_payment_method: PaymentMethod;
+          p_items: Json;
+        };
+        Returns: string;
+      };
+      default_commission_percent: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
       is_master: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
