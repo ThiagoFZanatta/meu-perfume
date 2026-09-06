@@ -33,6 +33,7 @@ O PRD diz que "não há autocadastro público — novos usuários só são criad
 - `src/styles.css` — paleta bone/surface/ink/wine/amber/hairline + cores funcionais (success/warning/danger) convertidas para oklch e mapeadas nos tokens semânticos do shadcn (`background`, `primary`, `accent`, etc.), além de expostas como tokens de marca (`bg-wine`, `text-amber`, etc.).
 - Tipografia Fraunces (display) + IBM Plex Sans (corpo), raio pequeno (6px) em botões/inputs, algarismos tabulares (`.tabular`) para colunas numéricas.
 - Paleta de gráficos alinhada à seção 14.5 (`chart-1` = wine, `chart-2` = amber).
+- **Padrão do item de menu ativo** (`src/components/dashboard-shell.tsx`): `bg-sidebar-accent/10 text-amber`, seguindo a seção 14.2 à risca ("amber... item de menu ativo, badges neutros" — não `wine`, reservado para ações principais/marca). Esse é o padrão a repetir quando Compras, Estoque, Vendas, Encomendas, Relatórios e Usuários (hoje placeholders "Em breve" em `DashboardShell`) ganharem suas telas e virarem links reais.
 
 ### 7. Tipos TypeScript
 - `src/integrations/supabase/types.ts` reescrito manualmente a partir da migration (sem CLI do Supabase disponível neste ambiente). **Atenção:** ao alterar o schema, atualizar este arquivo junto — não há geração automática configurada.

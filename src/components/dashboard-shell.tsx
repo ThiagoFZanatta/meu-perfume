@@ -40,7 +40,7 @@ export function DashboardShell({
                   className={cn(
                     "whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-colors",
                     pathname.startsWith(item.to)
-                      ? "bg-wine/10 font-medium text-wine"
+                      ? "bg-sidebar-accent/10 font-medium text-amber"
                       : "text-foreground hover:bg-muted",
                   )}
                 >
