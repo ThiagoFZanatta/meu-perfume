@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SellerRecentSales } from "@/components/seller-recent-sales";
@@ -12,19 +13,28 @@ export const Route = createFileRoute("/vendedor/")({
   component: VendedorDashboard,
 });
 
+type CatalogProduct = Omit<Tables<"products_catalog_v">, "current_sale_price"> & {
+  current_sale_price: number;
+};
+
 function useCatalog() {
   return useQuery({
     queryKey: ["dashboard", "vendedor", "catalog"],
     queryFn: async () => {
       // Usa a view products_catalog_v (RF10): expõe apenas colunas seguras,
       // sem custo/margem, mesmo que o vendedor chame a API diretamente.
+      // current_sale_price null (produto sem nenhuma compra remanescente, ver
+      // recompute_product_pricing() no banco) não pode ser vendido, então nem
+      // aparece aqui — esta tela existe justamente para consultar "estoque
+      // disponível e preço de venda" (PRD, Tela 7).
       const { data, error } = await supabase
         .from("products_catalog_v")
         .select("*")
         .eq("active", true)
+        .not("current_sale_price", "is", null)
         .order("name");
       if (error) throw error;
-      return data;
+      return (data ?? []) as CatalogProduct[];
     },
   });
 }

@@ -21,7 +21,7 @@ type Purchase = Tables<"purchases">;
 type PurchaseItem = Tables<"purchase_items">;
 type Product = Pick<
   Tables<"products">,
-  "id" | "name" | "brand" | "current_sale_price" | "last_purchase_date"
+  "id" | "name" | "brand" | "current_sale_price" | "last_purchase_date" | "markup_percent"
 >;
 
 function useProducts() {
@@ -30,7 +30,7 @@ function useProducts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, brand, current_sale_price, last_purchase_date");
+        .select("id, name, brand, current_sale_price, last_purchase_date, markup_percent");
       if (error) throw error;
       return data as Product[];
     },
@@ -76,10 +76,14 @@ function useItemsByPurchase(purchaseIds: string[]) {
 // nenhuma forma de corrigi-la. Excluir + relançar continua sendo o fluxo padrão
 // de correção (não há tela de edição genérica); esta tela é a exceção só para
 // compras, e só para os campos que não mexem em quantidade/estoque (taxa de
-// câmbio, frete, preço unitário em USD, preço de venda) — por isso nunca esbarra
-// naquela trava. Ver update_purchase_pricing() e PROGRESSO.md para a regra de
-// "compra mais recente do produto" que decide se a correção também atualiza o
-// preço/custo vigente do produto ou fica só no histórico desta compra.
+// câmbio, frete, preço unitário em USD) — por isso nunca esbarra naquela trava.
+// O preço de venda não é mais editado aqui: update_purchase_pricing() sempre
+// RECOMPÕE o preço vigente do produto (quando esta é a compra mais recente
+// dele) a partir do novo custo × markup_percent do produto, no banco — a coluna
+// "novo preço sugerido" abaixo é só uma prévia do que o backend vai calcular.
+// Ver PROGRESSO.md para a limitação aceita sobre por que o preço de venda é
+// recomposto, e não recuperado literalmente (o schema não guarda histórico de
+// preço de venda confirmado por compra, só de custo).
 export function PurchaseCorrectionPanel() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -193,7 +197,7 @@ export function PurchaseCorrectionPanel() {
   );
 }
 
-type ItemEdit = { unitPriceUsd: string; salePrice: string };
+type ItemEdit = { unitPriceUsd: string };
 
 function PurchaseRow({
   purchase,
@@ -214,13 +218,7 @@ function PurchaseRow({
   const [freightCostBrl, setFreightCostBrl] = useState(String(purchase.freight_cost_brl));
   const [itemEdits, setItemEdits] = useState<Record<string, ItemEdit>>(() =>
     Object.fromEntries(
-      items.map((item) => [
-        item.product_id,
-        {
-          unitPriceUsd: String(item.unit_price_usd),
-          salePrice: String(productMap.get(item.product_id)?.current_sale_price ?? ""),
-        },
-      ]),
+      items.map((item) => [item.product_id, { unitPriceUsd: String(item.unit_price_usd) }]),
     ),
   );
   const [submitting, setSubmitting] = useState(false);
@@ -235,19 +233,24 @@ function PurchaseRow({
     return Math.round((unitPriceUsd * exchangeRateNum + freightPerUnit) * 100) / 100;
   }
 
+  // Só uma prévia: o preço de venda de fato é sempre recomposto pelo backend
+  // (custo × markup_percent do produto), nunca digitado aqui — ver comentário
+  // no topo do arquivo.
+  function suggestedSalePrice(item: PurchaseItem) {
+    const markup = productMap.get(item.product_id)?.markup_percent ?? 0;
+    return Math.round(computedUnitCost(item) * (1 + markup / 100) * 100) / 100;
+  }
+
   const newTotalCost = items.reduce((sum, item) => sum + computedUnitCost(item) * item.quantity, 0);
 
   const isValid =
     exchangeRateNum > 0 &&
     (Number(freightCostBrl) || 0) >= 0 &&
-    items.every((item) => {
-      const edit = itemEdits[item.product_id];
-      return Number(edit?.unitPriceUsd) > 0 && Number(edit?.salePrice) >= 0;
-    });
+    items.every((item) => Number(itemEdits[item.product_id]?.unitPriceUsd) > 0);
 
   async function handleSubmit() {
     if (!isValid) {
-      setError("Preencha taxa de câmbio, frete e os valores de cada item corretamente.");
+      setError("Preencha taxa de câmbio, frete e o preço em USD de cada item corretamente.");
       return;
     }
     setSubmitting(true);
@@ -256,14 +259,13 @@ function PurchaseRow({
     const payloadItems = items.map((item) => ({
       product_id: item.product_id,
       unit_price_usd: Number(itemEdits[item.product_id]?.unitPriceUsd),
-      current_sale_price: Number(itemEdits[item.product_id]?.salePrice),
     }));
 
     const { error: rpcError } = await supabase.rpc("update_purchase_pricing", {
       p_purchase_id: purchase.id,
       p_exchange_rate: exchangeRateNum,
       p_freight_cost_brl: Number(freightCostBrl) || 0,
-      p_sale_prices: payloadItems,
+      p_items: payloadItems,
     });
 
     setSubmitting(false);
@@ -329,8 +331,7 @@ function PurchaseRow({
                   <TableHead className="text-right">Qtd.</TableHead>
                   <TableHead className="text-right">Preço unit. (USD)</TableHead>
                   <TableHead className="text-right">Custo unit. (R$)</TableHead>
-                  <TableHead className="text-right">Preço de venda (R$)</TableHead>
-                  <TableHead />
+                  <TableHead className="text-right">Novo preço sugerido (R$)</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -355,10 +356,7 @@ function PurchaseRow({
                           onChange={(e) =>
                             setItemEdits((prev) => ({
                               ...prev,
-                              [item.product_id]: {
-                                unitPriceUsd: e.target.value,
-                                salePrice: prev[item.product_id]?.salePrice ?? "",
-                              },
+                              [item.product_id]: { unitPriceUsd: e.target.value },
                             }))
                           }
                         />
@@ -366,38 +364,26 @@ function PurchaseRow({
                       <TableCell className="tabular text-right text-muted-foreground">
                         {computedUnitCost(item).toFixed(2)}
                       </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            className="tabular text-right"
-                            value={itemEdits[item.product_id]?.salePrice ?? ""}
-                            onChange={(e) =>
-                              setItemEdits((prev) => ({
-                                ...prev,
-                                [item.product_id]: {
-                                  unitPriceUsd: prev[item.product_id]?.unitPriceUsd ?? "",
-                                  salePrice: e.target.value,
-                                },
-                              }))
-                            }
-                          />
-                          {!isLatestForProduct && (
-                            <p className="text-right text-xs text-muted-foreground">
-                              há compra mais recente — só atualiza o histórico
-                            </p>
-                          )}
-                        </div>
+                      <TableCell className="text-right">
+                        <p className="tabular text-muted-foreground">
+                          {suggestedSalePrice(item).toFixed(2)}
+                        </p>
+                        {!isLatestForProduct && (
+                          <p className="text-xs text-muted-foreground">
+                            há compra mais recente — só atualiza o histórico
+                          </p>
+                        )}
                       </TableCell>
-                      <TableCell />
                     </TableRow>
                   );
                 })}
               </TableBody>
             </Table>
           </div>
+          <p className="text-xs text-muted-foreground">
+            O preço de venda do produto não é digitado aqui — é recomposto automaticamente pelo
+            sistema (custo × markup do produto) quando esta é a compra mais recente dele.
+          </p>
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/50 px-4 py-3">
             <p className="tabular text-sm text-muted-foreground">
