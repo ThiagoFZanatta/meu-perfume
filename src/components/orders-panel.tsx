@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -325,16 +326,16 @@ function OrdersList({ status }: { status: Order["status"] }) {
                       </Button>
                     )}
                     {isMaster && (
-                      <Button
-                        type="button"
-                        variant="ghost"
+                      <ConfirmDeleteButton
+                        triggerLabel="Excluir"
+                        pendingLabel="Excluindo..."
+                        pending={deletingId === order.id}
                         size="sm"
                         className="text-danger hover:text-danger"
-                        disabled={deletingId === order.id}
-                        onClick={() => handleDelete(order.id)}
-                      >
-                        {deletingId === order.id ? "Excluindo..." : "Excluir"}
-                      </Button>
+                        title="Excluir esta encomenda?"
+                        description="O registro do pedido será apagado definitivamente, inclusive do histórico. Esta ação não pode ser desfeita."
+                        onConfirm={() => handleDelete(order.id)}
+                      />
                     )}
                   </div>
                 </TableCell>

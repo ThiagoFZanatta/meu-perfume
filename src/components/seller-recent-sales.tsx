@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
+import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 
 type Sale = Tables<"sales_seller_v">;
 
@@ -102,20 +103,21 @@ export function SellerRecentSales() {
                   {sale.status !== "concluida" && " · devolvida"}
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
+              <ConfirmDeleteButton
+                triggerLabel="Excluir"
+                pendingLabel="Excluindo..."
+                pending={deletingId === sale.id}
+                disabled={!withinWindow}
                 size="sm"
-                disabled={!withinWindow || deletingId === sale.id}
-                onClick={() => handleDelete(sale.id)}
-                title={
+                triggerTitle={
                   !withinWindow
                     ? "Fora da janela de correção (ou venda já devolvida) — só o master pode corrigir agora"
                     : undefined
                 }
-              >
-                {deletingId === sale.id ? "Excluindo..." : "Excluir"}
-              </Button>
+                title="Excluir esta venda?"
+                description="O estoque vendido nela será reposto e a venda deixará de existir. Esta ação não pode ser desfeita."
+                onConfirm={() => handleDelete(sale.id)}
+              />
             </div>
           );
         })}

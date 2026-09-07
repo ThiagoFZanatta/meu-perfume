@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -426,15 +427,15 @@ function PurchaseRow({
           {error && <p className="text-sm text-danger">{error}</p>}
 
           <div className="flex justify-end border-t border-hairline pt-3">
-            <Button
-              type="button"
-              variant="ghost"
+            <ConfirmDeleteButton
+              triggerLabel="Excluir compra"
+              pendingLabel="Excluindo..."
+              pending={deleting}
               className="text-danger hover:text-danger"
-              disabled={deleting}
-              onClick={handleDelete}
-            >
-              {deleting ? "Excluindo..." : "Excluir compra"}
-            </Button>
+              title="Excluir esta compra?"
+              description="O estoque comprado nela será revertido e o custo/preço vigente do produto pode voltar para o de uma compra anterior. Esta ação não pode ser desfeita."
+              onConfirm={handleDelete}
+            />
           </div>
         </div>
       )}

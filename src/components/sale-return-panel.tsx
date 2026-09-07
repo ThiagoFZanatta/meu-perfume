@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -417,16 +418,19 @@ function SaleRow({
           {error && <p className="text-sm text-danger">{error}</p>}
 
           <div className="flex justify-end border-t border-hairline pt-3">
-            <Button
-              type="button"
-              variant="ghost"
+            <ConfirmDeleteButton
+              triggerLabel="Excluir venda"
+              pendingLabel="Excluindo..."
+              pending={deleting}
+              disabled={!canDelete}
               className="text-danger hover:text-danger"
-              disabled={!canDelete || deleting}
-              onClick={handleDelete}
-              title={!canDelete ? "Venda já devolvida — não pode mais ser excluída" : undefined}
-            >
-              {deleting ? "Excluindo..." : "Excluir venda"}
-            </Button>
+              triggerTitle={
+                !canDelete ? "Venda já devolvida — não pode mais ser excluída" : undefined
+              }
+              title="Excluir esta venda?"
+              description="O estoque vendido nela será reposto e a venda deixará de existir. Esta ação não pode ser desfeita."
+              onConfirm={handleDelete}
+            />
           </div>
         </div>
       )}
