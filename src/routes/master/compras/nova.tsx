@@ -12,7 +12,7 @@ function NovaCompraPage() {
       <div className="flex items-center justify-between">
         <h2 className="font-display text-2xl font-medium">Registrar compra</h2>
         <Link to="/master/compras/corrigir" className="text-sm text-muted-foreground underline">
-          Corrigir uma compra já registrada
+          Ver, corrigir ou excluir compras já registradas
         </Link>
       </div>
       <div className="mt-6">

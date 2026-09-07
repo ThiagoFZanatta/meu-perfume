@@ -10,14 +10,14 @@ function CorrigirCompraPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-2xl font-medium">Corrigir compra</h2>
+        <h2 className="font-display text-2xl font-medium">Compras registradas</h2>
         <Link to="/master/compras/nova" className="text-sm text-muted-foreground underline">
           Registrar nova compra
         </Link>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Corrige taxa de câmbio, frete e preços de uma compra já registrada, sem alterar quantidade
-        nem produtos.
+        Busque uma compra para corrigir taxa de câmbio, frete e preços (sem alterar quantidade nem
+        produtos) ou excluí-la por completo, revertendo o estoque.
       </p>
       <div className="mt-6">
         <PurchaseCorrectionPanel />

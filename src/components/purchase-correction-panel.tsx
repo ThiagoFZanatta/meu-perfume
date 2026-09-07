@@ -84,6 +84,10 @@ function useItemsByPurchase(purchaseIds: string[]) {
 // Ver PROGRESSO.md para a limitação aceita sobre por que o preço de venda é
 // recomposto, e não recuperado literalmente (o schema não guarda histórico de
 // preço de venda confirmado por compra, só de custo).
+//
+// Esta tela também é o único ponto de entrada de `delete_purchase()` (RF13): a
+// busca por data/produto já a torna, na prática, a listagem de compras que
+// faltava (RF04) — não há necessidade de uma tela separada só para isso.
 export function PurchaseCorrectionPanel() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -222,6 +226,7 @@ function PurchaseRow({
     ),
   );
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -276,6 +281,29 @@ function PurchaseRow({
     }
 
     toast.success(`Compra corrigida. Novo total: R$ ${newTotalCost.toFixed(2)}`);
+    onMutated();
+  }
+
+  // RF13 — delete_purchase() (backend desde a seção 15 do PROGRESSO) bloqueia
+  // (raise exception) quando reverter o estoque da compra deixaria algum
+  // produto negativo — ex.: parte do lote já foi vendida depois da compra.
+  // Não há como saber isso de antemão sem repetir a mesma conta do backend, então
+  // o botão fica sempre habilitado e a mensagem de erro, quando houver, vem
+  // diretamente do `raise exception` do banco.
+  async function handleDelete() {
+    setDeleting(true);
+    setError(null);
+    const { error: rpcError } = await supabase.rpc("delete_purchase", {
+      p_purchase_id: purchase.id,
+    });
+    setDeleting(false);
+
+    if (rpcError) {
+      setError(rpcError.message);
+      return;
+    }
+
+    toast.success("Compra excluída e estoque revertido.");
     onMutated();
   }
 
@@ -396,6 +424,18 @@ function PurchaseRow({
           </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
+
+          <div className="flex justify-end border-t border-hairline pt-3">
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-danger hover:text-danger"
+              disabled={deleting}
+              onClick={handleDelete}
+            >
+              {deleting ? "Excluindo..." : "Excluir compra"}
+            </Button>
+          </div>
         </div>
       )}
     </div>
