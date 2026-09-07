@@ -14,7 +14,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MasterRouteRouteImport } from './routes/master/route'
 import { Route as VendedorRouteRouteImport } from './routes/vendedor/route'
 import { Route as MasterIndexRouteImport } from './routes/master/index'
+import { Route as MasterDespesasRouteImport } from './routes/master/despesas'
+import { Route as MasterDreRouteImport } from './routes/master/dre'
 import { Route as MasterEncomendasRouteImport } from './routes/master/encomendas'
+import { Route as MasterFluxoCaixaRouteImport } from './routes/master/fluxo-caixa'
 import { Route as MasterRelatoriosRouteImport } from './routes/master/relatorios'
 import { Route as MasterUsuariosRouteImport } from './routes/master/usuarios'
 import { Route as VendedorIndexRouteImport } from './routes/vendedor/index'
@@ -53,9 +56,24 @@ const MasterIndexRoute = MasterIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MasterRouteRoute,
 } as any)
+const MasterDespesasRoute = MasterDespesasRouteImport.update({
+  id: '/despesas',
+  path: '/despesas',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
+const MasterDreRoute = MasterDreRouteImport.update({
+  id: '/dre',
+  path: '/dre',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
 const MasterEncomendasRoute = MasterEncomendasRouteImport.update({
   id: '/encomendas',
   path: '/encomendas',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
+const MasterFluxoCaixaRoute = MasterFluxoCaixaRouteImport.update({
+  id: '/fluxo-caixa',
+  path: '/fluxo-caixa',
   getParentRoute: () => MasterRouteRoute,
 } as any)
 const MasterRelatoriosRoute = MasterRelatoriosRouteImport.update({
@@ -124,7 +142,10 @@ export interface FileRoutesByFullPath {
   '/master': typeof MasterRouteRouteWithChildren
   '/vendedor': typeof VendedorRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/master/despesas': typeof MasterDespesasRoute
+  '/master/dre': typeof MasterDreRoute
   '/master/encomendas': typeof MasterEncomendasRoute
+  '/master/fluxo-caixa': typeof MasterFluxoCaixaRoute
   '/master/relatorios': typeof MasterRelatoriosRoute
   '/master/usuarios': typeof MasterUsuariosRoute
   '/vendedor/encomendas': typeof VendedorEncomendasRoute
@@ -142,7 +163,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/master/despesas': typeof MasterDespesasRoute
+  '/master/dre': typeof MasterDreRoute
   '/master/encomendas': typeof MasterEncomendasRoute
+  '/master/fluxo-caixa': typeof MasterFluxoCaixaRoute
   '/master/relatorios': typeof MasterRelatoriosRoute
   '/master/usuarios': typeof MasterUsuariosRoute
   '/vendedor/encomendas': typeof VendedorEncomendasRoute
@@ -163,7 +187,10 @@ export interface FileRoutesById {
   '/master': typeof MasterRouteRouteWithChildren
   '/vendedor': typeof VendedorRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/master/despesas': typeof MasterDespesasRoute
+  '/master/dre': typeof MasterDreRoute
   '/master/encomendas': typeof MasterEncomendasRoute
+  '/master/fluxo-caixa': typeof MasterFluxoCaixaRoute
   '/master/relatorios': typeof MasterRelatoriosRoute
   '/master/usuarios': typeof MasterUsuariosRoute
   '/vendedor/encomendas': typeof VendedorEncomendasRoute
@@ -185,7 +212,10 @@ export interface FileRouteTypes {
     | '/master'
     | '/vendedor'
     | '/login'
+    | '/master/despesas'
+    | '/master/dre'
     | '/master/encomendas'
+    | '/master/fluxo-caixa'
     | '/master/relatorios'
     | '/master/usuarios'
     | '/vendedor/encomendas'
@@ -203,7 +233,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/master/despesas'
+    | '/master/dre'
     | '/master/encomendas'
+    | '/master/fluxo-caixa'
     | '/master/relatorios'
     | '/master/usuarios'
     | '/vendedor/encomendas'
@@ -223,7 +256,10 @@ export interface FileRouteTypes {
     | '/master'
     | '/vendedor'
     | '/login'
+    | '/master/despesas'
+    | '/master/dre'
     | '/master/encomendas'
+    | '/master/fluxo-caixa'
     | '/master/relatorios'
     | '/master/usuarios'
     | '/vendedor/encomendas'
@@ -283,11 +319,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MasterIndexRouteImport
       parentRoute: typeof MasterRouteRoute
     }
+    '/master/despesas': {
+      id: '/master/despesas'
+      path: '/despesas'
+      fullPath: '/master/despesas'
+      preLoaderRoute: typeof MasterDespesasRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
+    '/master/dre': {
+      id: '/master/dre'
+      path: '/dre'
+      fullPath: '/master/dre'
+      preLoaderRoute: typeof MasterDreRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
     '/master/encomendas': {
       id: '/master/encomendas'
       path: '/encomendas'
       fullPath: '/master/encomendas'
       preLoaderRoute: typeof MasterEncomendasRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
+    '/master/fluxo-caixa': {
+      id: '/master/fluxo-caixa'
+      path: '/fluxo-caixa'
+      fullPath: '/master/fluxo-caixa'
+      preLoaderRoute: typeof MasterFluxoCaixaRouteImport
       parentRoute: typeof MasterRouteRoute
     }
     '/master/relatorios': {
@@ -378,7 +435,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface MasterRouteRouteChildren {
+  MasterDespesasRoute: typeof MasterDespesasRoute
+  MasterDreRoute: typeof MasterDreRoute
   MasterEncomendasRoute: typeof MasterEncomendasRoute
+  MasterFluxoCaixaRoute: typeof MasterFluxoCaixaRoute
   MasterRelatoriosRoute: typeof MasterRelatoriosRoute
   MasterUsuariosRoute: typeof MasterUsuariosRoute
   MasterIndexRoute: typeof MasterIndexRoute
@@ -392,7 +452,10 @@ interface MasterRouteRouteChildren {
 }
 
 const MasterRouteRouteChildren: MasterRouteRouteChildren = {
+  MasterDespesasRoute: MasterDespesasRoute,
+  MasterDreRoute: MasterDreRoute,
   MasterEncomendasRoute: MasterEncomendasRoute,
+  MasterFluxoCaixaRoute: MasterFluxoCaixaRoute,
   MasterRelatoriosRoute: MasterRelatoriosRoute,
   MasterUsuariosRoute: MasterUsuariosRoute,
   MasterIndexRoute: MasterIndexRoute,
