@@ -1,5 +1,5 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,8 @@ import type { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 
 type Sale = Tables<"sales_seller_v">;
+
+const PAGE_SIZE = 10;
 
 const PAYMENT_LABELS: Record<Sale["payment_method"], string> = {
   especie: "Espécie",
@@ -32,33 +34,38 @@ function useEditWindowHours() {
 }
 
 function useRecentSales() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["vendedor", "vendas-recentes"],
-    queryFn: async () => {
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
       const { data, error } = await supabase
         .from("sales_seller_v")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(10);
+        .range(pageParam * PAGE_SIZE, pageParam * PAGE_SIZE + PAGE_SIZE - 1);
       if (error) throw error;
       return data as Sale[];
     },
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === PAGE_SIZE ? allPages.length : undefined,
   });
 }
 
-// RF13 (Tela 8, "Correção"): lista compacta das últimas vendas do próprio
-// vendedor, com exclusão habilitada só dentro da janela de correção (padrão
-// configurado em settings.edit_window_hours_seller, default 2h). Não é a
-// listagem completa de histórico de vendas (pendência documentada, deferida
-// para Relatórios/RF09) — só o suficiente para a correção prevista em RF13.
+// RF13 (Tela 8, "Correção"): lista das próprias vendas, com exclusão
+// habilitada só dentro da janela de correção (padrão configurado em
+// settings.edit_window_hours_seller, default 2h) — e paginada ("Carregar
+// mais") em vez de um corte fixo em 10, cobrindo também a pendência de
+// listagem completa de histórico registrada para o vendedor.
 export function SellerRecentSales() {
   const sales = useRecentSales();
   const editWindow = useEditWindowHours();
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const allSales = useMemo(() => sales.data?.pages.flat() ?? [], [sales.data]);
+
   if (sales.isPending) return null;
-  if (sales.isError || !sales.data || sales.data.length === 0) return null;
+  if (sales.isError || allSales.length === 0) return null;
 
   const windowHours = editWindow.data ?? 2;
 
@@ -79,9 +86,9 @@ export function SellerRecentSales() {
 
   return (
     <div className="mt-8">
-      <h3 className="mb-3 text-sm font-medium text-muted-foreground">Minhas últimas vendas</h3>
+      <h3 className="mb-3 text-sm font-medium text-muted-foreground">Minhas vendas</h3>
       <div className="divide-y divide-hairline rounded-xl border border-hairline">
-        {sales.data.map((sale) => {
+        {allSales.map((sale) => {
           const withinWindow =
             sale.status === "concluida" &&
             Date.now() - new Date(sale.created_at).getTime() < windowHours * 60 * 60 * 1000;
@@ -113,6 +120,19 @@ export function SellerRecentSales() {
           );
         })}
       </div>
+      {sales.hasNextPage && (
+        <div className="mt-3 flex justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={sales.isFetchingNextPage}
+            onClick={() => sales.fetchNextPage()}
+          >
+            {sales.isFetchingNextPage ? "Carregando..." : "Carregar mais"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

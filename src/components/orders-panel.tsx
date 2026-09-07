@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -213,9 +214,12 @@ function NewOrderForm() {
 
 function OrdersList({ status }: { status: Order["status"] }) {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const isMaster = profile?.role === "master";
   const orders = useOrders(status);
   const products = useCatalogProducts();
   const [markingId, setMarkingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const productMap = useMemo(() => {
     const map = new Map<string, Product>();
@@ -242,6 +246,24 @@ function OrdersList({ status }: { status: Order["status"] }) {
     }
 
     toast.success("Encomenda marcada como atendida.");
+    void queryClient.invalidateQueries({ queryKey: ["encomendas"] });
+  }
+
+  // RF08/LGPD (seção 8 do PRD): exclusão de encomenda a pedido do cliente —
+  // a policy `orders_delete_master` já restringia isso ao master desde o
+  // schema inicial; só faltava o botão. Vendedor não vê a ação (nem tenta
+  // e ser barrado pela RLS).
+  async function handleDelete(id: string) {
+    setDeletingId(id);
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    setDeletingId(null);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Encomenda excluída.");
     void queryClient.invalidateQueries({ queryKey: ["encomendas"] });
   }
 
@@ -276,7 +298,7 @@ function OrdersList({ status }: { status: Order["status"] }) {
             <TableHead>Contato</TableHead>
             <TableHead>Produto</TableHead>
             <TableHead>Data do pedido</TableHead>
-            {status === "aberto" && <TableHead />}
+            {(status === "aberto" || isMaster) && <TableHead />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -288,17 +310,33 @@ function OrdersList({ status }: { status: Order["status"] }) {
               <TableCell className="tabular">
                 {new Date(order.created_at).toLocaleDateString("pt-BR")}
               </TableCell>
-              {status === "aberto" && (
+              {(status === "aberto" || isMaster) && (
                 <TableCell className="text-right">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={markingId === order.id}
-                    onClick={() => handleMarkAttended(order.id)}
-                  >
-                    {markingId === order.id ? "Marcando..." : "Marcar como atendido"}
-                  </Button>
+                  <div className="flex justify-end gap-2">
+                    {status === "aberto" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={markingId === order.id}
+                        onClick={() => handleMarkAttended(order.id)}
+                      >
+                        {markingId === order.id ? "Marcando..." : "Marcar como atendido"}
+                      </Button>
+                    )}
+                    {isMaster && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-danger hover:text-danger"
+                        disabled={deletingId === order.id}
+                        onClick={() => handleDelete(order.id)}
+                      >
+                        {deletingId === order.id ? "Excluindo..." : "Excluir"}
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               )}
             </TableRow>

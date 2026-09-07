@@ -25,6 +25,7 @@ import { Route as MasterCatalogoNovoRouteImport } from './routes/master/catalogo
 import { Route as MasterComprasCorrigirRouteImport } from './routes/master/compras/corrigir'
 import { Route as MasterComprasNovaRouteImport } from './routes/master/compras/nova'
 import { Route as MasterVendasDevolucaoRouteImport } from './routes/master/vendas/devolucao'
+import { Route as MasterVendasHistoricoRouteImport } from './routes/master/vendas/historico'
 import { Route as VendedorVendasNovaRouteImport } from './routes/vendedor/vendas/nova'
 
 const IndexRoute = IndexRouteImport.update({
@@ -107,6 +108,11 @@ const MasterVendasDevolucaoRoute = MasterVendasDevolucaoRouteImport.update({
   path: '/vendas/devolucao',
   getParentRoute: () => MasterRouteRoute,
 } as any)
+const MasterVendasHistoricoRoute = MasterVendasHistoricoRouteImport.update({
+  id: '/vendas/historico',
+  path: '/vendas/historico',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
 const VendedorVendasNovaRoute = VendedorVendasNovaRouteImport.update({
   id: '/vendas/nova',
   path: '/vendas/nova',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/master/compras/corrigir': typeof MasterComprasCorrigirRoute
   '/master/compras/nova': typeof MasterComprasNovaRoute
   '/master/vendas/devolucao': typeof MasterVendasDevolucaoRoute
+  '/master/vendas/historico': typeof MasterVendasHistoricoRoute
   '/vendedor/vendas/nova': typeof VendedorVendasNovaRoute
   '/master/catalogo/': typeof MasterCatalogoIndexRoute
 }
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/master/compras/corrigir': typeof MasterComprasCorrigirRoute
   '/master/compras/nova': typeof MasterComprasNovaRoute
   '/master/vendas/devolucao': typeof MasterVendasDevolucaoRoute
+  '/master/vendas/historico': typeof MasterVendasHistoricoRoute
   '/vendedor/vendas/nova': typeof VendedorVendasNovaRoute
   '/master/catalogo': typeof MasterCatalogoIndexRoute
 }
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/master/compras/corrigir': typeof MasterComprasCorrigirRoute
   '/master/compras/nova': typeof MasterComprasNovaRoute
   '/master/vendas/devolucao': typeof MasterVendasDevolucaoRoute
+  '/master/vendas/historico': typeof MasterVendasHistoricoRoute
   '/vendedor/vendas/nova': typeof VendedorVendasNovaRoute
   '/master/catalogo/': typeof MasterCatalogoIndexRoute
 }
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/master/compras/corrigir'
     | '/master/compras/nova'
     | '/master/vendas/devolucao'
+    | '/master/vendas/historico'
     | '/vendedor/vendas/nova'
     | '/master/catalogo/'
   fileRoutesByTo: FileRoutesByTo
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/master/compras/corrigir'
     | '/master/compras/nova'
     | '/master/vendas/devolucao'
+    | '/master/vendas/historico'
     | '/vendedor/vendas/nova'
     | '/master/catalogo'
   id:
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/master/compras/corrigir'
     | '/master/compras/nova'
     | '/master/vendas/devolucao'
+    | '/master/vendas/historico'
     | '/vendedor/vendas/nova'
     | '/master/catalogo/'
   fileRoutesById: FileRoutesById
@@ -348,6 +360,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MasterVendasDevolucaoRouteImport
       parentRoute: typeof MasterRouteRoute
     }
+    '/master/vendas/historico': {
+      id: '/master/vendas/historico'
+      path: '/vendas/historico'
+      fullPath: '/master/vendas/historico'
+      preLoaderRoute: typeof MasterVendasHistoricoRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
     '/vendedor/vendas/nova': {
       id: '/vendedor/vendas/nova'
       path: '/vendas/nova'
@@ -368,6 +387,7 @@ interface MasterRouteRouteChildren {
   MasterComprasCorrigirRoute: typeof MasterComprasCorrigirRoute
   MasterComprasNovaRoute: typeof MasterComprasNovaRoute
   MasterVendasDevolucaoRoute: typeof MasterVendasDevolucaoRoute
+  MasterVendasHistoricoRoute: typeof MasterVendasHistoricoRoute
   MasterCatalogoIndexRoute: typeof MasterCatalogoIndexRoute
 }
 
@@ -381,6 +401,7 @@ const MasterRouteRouteChildren: MasterRouteRouteChildren = {
   MasterComprasCorrigirRoute: MasterComprasCorrigirRoute,
   MasterComprasNovaRoute: MasterComprasNovaRoute,
   MasterVendasDevolucaoRoute: MasterVendasDevolucaoRoute,
+  MasterVendasHistoricoRoute: MasterVendasHistoricoRoute,
   MasterCatalogoIndexRoute: MasterCatalogoIndexRoute,
 }
 
