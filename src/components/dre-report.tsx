@@ -12,7 +12,11 @@ type SaleItem = Pick<
   Tables<"sale_items">,
   "sale_id" | "product_id" | "quantity" | "returned_quantity"
 >;
-type PurchaseItem = Pick<Tables<"purchase_items">, "product_id" | "quantity" | "unit_cost_brl">;
+type Purchase = Pick<Tables<"purchases">, "id" | "purchase_date">;
+type PurchaseItem = Pick<
+  Tables<"purchase_items">,
+  "purchase_id" | "product_id" | "quantity" | "unit_cost_brl"
+>;
 type Expense = Pick<Tables<"expenses">, "expense_date" | "amount">;
 
 function useSalesInPeriod(dateFrom: string, dateTo: string) {
@@ -46,15 +50,34 @@ function useAllSaleItems() {
   });
 }
 
-// Todo o histórico de compras (sem filtro de período), usado só para compor o
-// custo médio ponderado por produto — ver decisão de RF12 no PROGRESSO.md.
+// Compras com `purchase_date <= fim do período filtrado` (nunca depois) —
+// usada para recortar quais `purchase_items` entram no custo médio ponderado
+// por produto (ver decisão de RF12 no PROGRESSO.md). A condição de data mora
+// em `purchases`, não em `purchase_items`, por isso o corte é feito aqui e
+// casado por `purchase_id` depois, mesmo padrão já usado para casar
+// `sale_items` com `sales` por período.
+function usePurchasesUpToPeriodEnd(dateTo: string) {
+  return useQuery({
+    queryKey: ["dre", "compras-ate-fim-periodo", dateTo],
+    queryFn: async () => {
+      let query = supabase.from("purchases").select("id, purchase_date");
+      if (dateTo) query = query.lte("purchase_date", dateTo);
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as Purchase[];
+    },
+  });
+}
+
+// Todo o histórico de itens de compra (sem filtro de período aqui — o corte
+// por data acontece casando com `usePurchasesUpToPeriodEnd` acima).
 function useAllPurchaseItems() {
   return useQuery({
     queryKey: ["dre", "itens-compra-todos"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("purchase_items")
-        .select("product_id, quantity, unit_cost_brl");
+        .select("purchase_id, product_id, quantity, unit_cost_brl");
       if (error) throw error;
       return data as PurchaseItem[];
     },
@@ -79,20 +102,20 @@ function useExpensesInPeriod(dateFrom: string, dateTo: string) {
 // de `stock-turnover-report.tsx` (RF09), os dados já liberados por RLS a
 // `is_master()` são agregados no cliente.
 //
-// Custo médio ponderado (RF12, critério de aceite): o PRD define a fórmula
-// por produto — `Σ(quantidade_do_lote × custo_unitário_do_lote) ÷
-// quantidade_total_comprada` — mas deixa em aberto (com "ou") se a base do
-// cálculo é "as compras do período" ou "o estoque consumido". Decisão
-// adotada aqui: o custo médio de cada produto é calculado sobre TODO o
-// histórico de compras dele (não só as do período filtrado). Duas razões:
-// (1) uma venda no período normalmente consome estoque comprado em períodos
-// anteriores, então restringir a média às compras do próprio período misturaria
-// unidades comparadas ao custo errado; (2) evita divisão por zero num período
-// em que o produto vendeu mas não foi comprado de novo. O CMV do período é
-// então `Σ custo_médio[produto] × quantidade_líquida_vendida_no_período[produto]`
-// — a variação cambial de compra a compra já fica diluída na média, que é o
-// objetivo declarado do RF12 ("reduzir a distorção causada por variação
-// cambial entre compras").
+// Custo médio ponderado (RF12, seções 7 e 11 do PRD): `custo_médio_do_produto
+// = Σ(quantidade_do_lote × custo_unitário_do_lote) ÷ quantidade_total_comprada`,
+// considerando SÓ as compras daquele produto com `purchase_date` até o fim do
+// período filtrado (nunca compras registradas depois) — nunca todo o
+// histórico até a data em que o relatório é gerado. Essa restrição existe
+// para garantir estabilidade: o CMV de um período já fechado não pode mudar
+// quando o relatório for gerado de novo no futuro, depois de novas compras
+// serem registradas. A média é então aplicada à quantidade líquida vendida do
+// produto dentro do período (`quantidade vendida − devolvida`, sem mudança).
+// Se um produto for vendido no período sem nenhuma compra registrada até o
+// fim dele, o CMV daquele item fica indefinido (guard-rail: não deveria ser
+// possível dado o controle de estoque, mas é tratado — mesmo espírito do
+// alerta "produtos sem preço de referência" do RF09) e é sinalizado à parte,
+// sem entrar no total do CMV como se custasse zero.
 export function DreReport() {
   const today = useMemo(() => new Date(), []);
   const [dateFrom, setDateFrom] = useState(() => format(startOfMonth(today), "yyyy-MM-dd"));
@@ -100,26 +123,40 @@ export function DreReport() {
 
   const sales = useSalesInPeriod(dateFrom, dateTo);
   const saleItems = useAllSaleItems();
+  const purchases = usePurchasesUpToPeriodEnd(dateTo);
   const purchaseItems = useAllPurchaseItems();
   const expenses = useExpensesInPeriod(dateFrom, dateTo);
 
   const isLoading =
-    sales.isPending || saleItems.isPending || purchaseItems.isPending || expenses.isPending;
-  const isError = sales.isError || saleItems.isError || purchaseItems.isError || expenses.isError;
+    sales.isPending ||
+    saleItems.isPending ||
+    purchases.isPending ||
+    purchaseItems.isPending ||
+    expenses.isPending;
+  const isError =
+    sales.isError ||
+    saleItems.isError ||
+    purchases.isError ||
+    purchaseItems.isError ||
+    expenses.isError;
 
   const result = useMemo(() => {
-    if (!sales.data || !saleItems.data || !purchaseItems.data || !expenses.data) return null;
+    if (!sales.data || !saleItems.data || !purchases.data || !purchaseItems.data || !expenses.data)
+      return null;
+
+    const purchaseIdsUpToPeriodEnd = new Set(purchases.data.map((p) => p.id));
 
     const avgCostByProduct = new Map<string, number>();
     const totalsByProduct = new Map<string, { qty: number; cost: number }>();
     for (const item of purchaseItems.data) {
+      if (!purchaseIdsUpToPeriodEnd.has(item.purchase_id)) continue;
       const current = totalsByProduct.get(item.product_id) ?? { qty: 0, cost: 0 };
       current.qty += item.quantity;
       current.cost += item.quantity * item.unit_cost_brl;
       totalsByProduct.set(item.product_id, current);
     }
     for (const [productId, totals] of totalsByProduct) {
-      avgCostByProduct.set(productId, totals.qty > 0 ? totals.cost / totals.qty : 0);
+      if (totals.qty > 0) avgCostByProduct.set(productId, totals.cost / totals.qty);
     }
 
     const saleIdsInPeriod = new Set(sales.data.map((s) => s.id));
@@ -131,8 +168,14 @@ export function DreReport() {
     }
 
     let cmv = 0;
+    let productsWithUndefinedCmv = 0;
     for (const [productId, qty] of netQtyByProduct) {
-      cmv += (avgCostByProduct.get(productId) ?? 0) * qty;
+      const avgCost = avgCostByProduct.get(productId);
+      if (avgCost === undefined) {
+        productsWithUndefinedCmv += 1;
+        continue;
+      }
+      cmv += avgCost * qty;
     }
 
     const receita = sales.data.reduce((sum, s) => sum + s.total_amount, 0);
@@ -140,8 +183,8 @@ export function DreReport() {
     const despesas = expenses.data.reduce((sum, e) => sum + e.amount, 0);
     const resultadoLiquido = receita - cmv - comissoes - despesas;
 
-    return { receita, cmv, comissoes, despesas, resultadoLiquido };
-  }, [sales.data, saleItems.data, purchaseItems.data, expenses.data]);
+    return { receita, cmv, comissoes, despesas, resultadoLiquido, productsWithUndefinedCmv };
+  }, [sales.data, saleItems.data, purchases.data, purchaseItems.data, expenses.data]);
 
   if (isLoading) {
     return (
@@ -187,6 +230,16 @@ export function DreReport() {
         <Row label="(–) Despesas gerais" value={-result.despesas} />
         <Row label="(=) Resultado líquido" value={result.resultadoLiquido} emphasis />
       </dl>
+
+      {result.productsWithUndefinedCmv > 0 && (
+        <p className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm text-warning">
+          {result.productsWithUndefinedCmv === 1
+            ? "1 produto foi vendido no período sem nenhuma compra registrada até o fim dele"
+            : `${result.productsWithUndefinedCmv} produtos foram vendidos no período sem nenhuma compra registrada até o fim dele`}
+          — o CMV desses itens ficou indefinido e não entrou no total acima (dado inconsistente;
+          verifique o histórico de compras desses produtos).
+        </p>
+      )}
     </div>
   );
 }
