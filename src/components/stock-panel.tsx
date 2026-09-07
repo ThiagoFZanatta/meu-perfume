@@ -99,8 +99,8 @@ export function StockPanel() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead />
                 <TableHead>Produto</TableHead>
+                <TableHead />
                 <TableHead className="text-right">ML</TableHead>
                 <TableHead className="text-right">Estoque</TableHead>
                 <TableHead className="text-right">Preço de venda</TableHead>
@@ -122,17 +122,6 @@ export function StockPanel() {
                 return (
                   <TableRow key={p.id}>
                     <TableCell>
-                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted">
-                        {p.image_url ? (
-                          <img
-                            src={p.image_url}
-                            alt={p.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>
                       <div className="flex items-center gap-2">
                         <div>
                           <p className="font-medium">{p.name}</p>
@@ -143,6 +132,17 @@ export function StockPanel() {
                             estoque baixo
                           </span>
                         )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted">
+                        {p.image_url ? (
+                          <img
+                            src={p.image_url}
+                            alt={p.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : null}
                       </div>
                     </TableCell>
                     <TableCell className="tabular text-right">{p.ml}</TableCell>
