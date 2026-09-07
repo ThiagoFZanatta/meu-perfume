@@ -17,6 +17,7 @@ import { Route as MasterIndexRouteImport } from './routes/master/index'
 import { Route as MasterDespesasRouteImport } from './routes/master/despesas'
 import { Route as MasterDreRouteImport } from './routes/master/dre'
 import { Route as MasterEncomendasRouteImport } from './routes/master/encomendas'
+import { Route as MasterEstoqueRouteImport } from './routes/master/estoque'
 import { Route as MasterFluxoCaixaRouteImport } from './routes/master/fluxo-caixa'
 import { Route as MasterRelatoriosRouteImport } from './routes/master/relatorios'
 import { Route as MasterUsuariosRouteImport } from './routes/master/usuarios'
@@ -69,6 +70,11 @@ const MasterDreRoute = MasterDreRouteImport.update({
 const MasterEncomendasRoute = MasterEncomendasRouteImport.update({
   id: '/encomendas',
   path: '/encomendas',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
+const MasterEstoqueRoute = MasterEstoqueRouteImport.update({
+  id: '/estoque',
+  path: '/estoque',
   getParentRoute: () => MasterRouteRoute,
 } as any)
 const MasterFluxoCaixaRoute = MasterFluxoCaixaRouteImport.update({
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/master/despesas': typeof MasterDespesasRoute
   '/master/dre': typeof MasterDreRoute
   '/master/encomendas': typeof MasterEncomendasRoute
+  '/master/estoque': typeof MasterEstoqueRoute
   '/master/fluxo-caixa': typeof MasterFluxoCaixaRoute
   '/master/relatorios': typeof MasterRelatoriosRoute
   '/master/usuarios': typeof MasterUsuariosRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/master/despesas': typeof MasterDespesasRoute
   '/master/dre': typeof MasterDreRoute
   '/master/encomendas': typeof MasterEncomendasRoute
+  '/master/estoque': typeof MasterEstoqueRoute
   '/master/fluxo-caixa': typeof MasterFluxoCaixaRoute
   '/master/relatorios': typeof MasterRelatoriosRoute
   '/master/usuarios': typeof MasterUsuariosRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/master/despesas': typeof MasterDespesasRoute
   '/master/dre': typeof MasterDreRoute
   '/master/encomendas': typeof MasterEncomendasRoute
+  '/master/estoque': typeof MasterEstoqueRoute
   '/master/fluxo-caixa': typeof MasterFluxoCaixaRoute
   '/master/relatorios': typeof MasterRelatoriosRoute
   '/master/usuarios': typeof MasterUsuariosRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
     | '/master/despesas'
     | '/master/dre'
     | '/master/encomendas'
+    | '/master/estoque'
     | '/master/fluxo-caixa'
     | '/master/relatorios'
     | '/master/usuarios'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/master/despesas'
     | '/master/dre'
     | '/master/encomendas'
+    | '/master/estoque'
     | '/master/fluxo-caixa'
     | '/master/relatorios'
     | '/master/usuarios'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/master/despesas'
     | '/master/dre'
     | '/master/encomendas'
+    | '/master/estoque'
     | '/master/fluxo-caixa'
     | '/master/relatorios'
     | '/master/usuarios'
@@ -338,6 +350,13 @@ declare module '@tanstack/react-router' {
       path: '/encomendas'
       fullPath: '/master/encomendas'
       preLoaderRoute: typeof MasterEncomendasRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
+    '/master/estoque': {
+      id: '/master/estoque'
+      path: '/estoque'
+      fullPath: '/master/estoque'
+      preLoaderRoute: typeof MasterEstoqueRouteImport
       parentRoute: typeof MasterRouteRoute
     }
     '/master/fluxo-caixa': {
@@ -438,6 +457,7 @@ interface MasterRouteRouteChildren {
   MasterDespesasRoute: typeof MasterDespesasRoute
   MasterDreRoute: typeof MasterDreRoute
   MasterEncomendasRoute: typeof MasterEncomendasRoute
+  MasterEstoqueRoute: typeof MasterEstoqueRoute
   MasterFluxoCaixaRoute: typeof MasterFluxoCaixaRoute
   MasterRelatoriosRoute: typeof MasterRelatoriosRoute
   MasterUsuariosRoute: typeof MasterUsuariosRoute
@@ -455,6 +475,7 @@ const MasterRouteRouteChildren: MasterRouteRouteChildren = {
   MasterDespesasRoute: MasterDespesasRoute,
   MasterDreRoute: MasterDreRoute,
   MasterEncomendasRoute: MasterEncomendasRoute,
+  MasterEstoqueRoute: MasterEstoqueRoute,
   MasterFluxoCaixaRoute: MasterFluxoCaixaRoute,
   MasterRelatoriosRoute: MasterRelatoriosRoute,
   MasterUsuariosRoute: MasterUsuariosRoute,

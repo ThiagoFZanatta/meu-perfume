@@ -15,7 +15,7 @@ export const Route = createFileRoute("/master")({
 const NAV_ITEMS: NavItem[] = [
   { label: "Catálogo", to: "/master/catalogo" },
   { label: "Compras", to: "/master/compras/nova" },
-  { label: "Estoque" },
+  { label: "Estoque", to: "/master/estoque" },
   { label: "Histórico de Vendas", to: "/master/vendas/historico" },
   { label: "Devolução de Venda", to: "/master/vendas/devolucao" },
   { label: "Encomendas", to: "/master/encomendas" },
