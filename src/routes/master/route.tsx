@@ -19,7 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Devolução de Venda", to: "/master/vendas/devolucao" },
   { label: "Encomendas", to: "/master/encomendas" },
   { label: "Relatórios", to: "/master/relatorios" },
-  { label: "Usuários" },
+  { label: "Usuários", to: "/master/usuarios" },
 ];
 
 function MasterShell() {
