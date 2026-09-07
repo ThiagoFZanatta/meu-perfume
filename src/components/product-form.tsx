@@ -19,6 +19,18 @@ import {
 
 type Product = Tables<"products">;
 
+// RF03 — pendência registrada no PROGRESSO.md: ao trocar a imagem de um
+// produto, o path novo sempre leva um timestamp (linha abaixo, em
+// handleSubmit), então o arquivo antigo nunca é sobrescrito — só órfão no
+// bucket. Extrai o path relativo de uma URL pública do Storage para poder
+// removê-lo depois que a troca for confirmada.
+function extractStoragePath(publicUrl: string, bucket: string): string | null {
+  const marker = `/object/public/${bucket}/`;
+  const index = publicUrl.indexOf(marker);
+  if (index === -1) return null;
+  return decodeURIComponent(publicUrl.slice(index + marker.length));
+}
+
 const GENDER_OPTIONS: { value: ProductGender; label: string }[] = [
   { value: "masculino", label: "Masculino" },
   { value: "feminino", label: "Feminino" },
@@ -64,7 +76,8 @@ export function ProductForm({ product }: { product?: Product }) {
     setError(null);
 
     const id = product?.id ?? crypto.randomUUID();
-    let imageUrl = product?.image_url ?? null;
+    const previousImageUrl = product?.image_url ?? null;
+    let imageUrl = previousImageUrl;
 
     if (imageFile) {
       const ext = imageFile.name.split(".").pop();
@@ -104,6 +117,20 @@ export function ProductForm({ product }: { product?: Product }) {
     if (saveError) {
       setError(saveError.message);
       return;
+    }
+
+    // Só remove a imagem antiga depois que a troca já está salva no produto
+    // (nunca antes) — melhor um arquivo órfão remanescente do que um produto
+    // sem nenhuma imagem válida caso o passo acima tivesse falhado. Best-effort:
+    // uma falha aqui não desfaz o salvamento, que já foi concluído com sucesso.
+    if (imageFile && previousImageUrl && previousImageUrl !== imageUrl) {
+      const previousPath = extractStoragePath(previousImageUrl, "products");
+      if (previousPath) {
+        const { error: removeError } = await supabase.storage
+          .from("products")
+          .remove([previousPath]);
+        if (removeError) console.warn("Falha ao remover imagem antiga:", removeError.message);
+      }
     }
 
     toast.success(isEdit ? "Produto atualizado." : "Produto cadastrado.");
