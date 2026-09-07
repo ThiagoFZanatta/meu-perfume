@@ -21,6 +21,9 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Encomendas", to: "/master/encomendas" },
   { label: "Relatórios", to: "/master/relatorios" },
   { label: "Usuários", to: "/master/usuarios" },
+  { label: "Despesas", to: "/master/despesas" },
+  { label: "DRE", to: "/master/dre" },
+  { label: "Fluxo de Caixa", to: "/master/fluxo-caixa" },
 ];
 
 function MasterShell() {
