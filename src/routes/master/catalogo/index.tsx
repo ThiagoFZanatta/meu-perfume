@@ -167,10 +167,20 @@ function ProductCard({ product }: { product: Product }) {
             Estoque: <strong>{product.stock_quantity}</strong>
           </span>
           <span>
-            Custo: <strong>R$ {product.current_unit_cost_brl.toFixed(2)}</strong>
+            Custo:{" "}
+            <strong>
+              {product.current_unit_cost_brl != null
+                ? `R$ ${product.current_unit_cost_brl.toFixed(2)}`
+                : "sem compra"}
+            </strong>
           </span>
           <span>
-            Venda: <strong>R$ {product.current_sale_price.toFixed(2)}</strong>
+            Venda:{" "}
+            <strong>
+              {product.current_sale_price != null
+                ? `R$ ${product.current_sale_price.toFixed(2)}`
+                : "sem compra"}
+            </strong>
           </span>
         </div>
       </div>

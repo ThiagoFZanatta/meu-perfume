@@ -50,8 +50,8 @@ export type Database = {
           image_url: string | null;
           stock_quantity: number;
           markup_percent: number;
-          current_unit_cost_brl: number;
-          current_sale_price: number;
+          current_unit_cost_brl: number | null;
+          current_sale_price: number | null;
           active: boolean;
           last_purchase_date: string | null;
           created_by: string | null;
@@ -67,8 +67,8 @@ export type Database = {
           image_url?: string | null;
           stock_quantity?: number;
           markup_percent: number;
-          current_unit_cost_brl?: number;
-          current_sale_price?: number;
+          current_unit_cost_brl?: number | null;
+          current_sale_price?: number | null;
           active?: boolean;
           last_purchase_date?: string | null;
           created_by?: string | null;
@@ -84,8 +84,8 @@ export type Database = {
           image_url?: string | null;
           stock_quantity?: number;
           markup_percent?: number;
-          current_unit_cost_brl?: number;
-          current_sale_price?: number;
+          current_unit_cost_brl?: number | null;
+          current_sale_price?: number | null;
           active?: boolean;
           last_purchase_date?: string | null;
           created_by?: string | null;
@@ -352,7 +352,7 @@ export type Database = {
           image_url: string | null;
           stock_quantity: number;
           active: boolean;
-          current_sale_price: number;
+          current_sale_price: number | null;
           last_purchase_date: string | null;
           created_at: string;
         };
@@ -420,12 +420,16 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: number;
       };
+      recompute_product_pricing: {
+        Args: { p_product_id: string };
+        Returns: undefined;
+      };
       update_purchase_pricing: {
         Args: {
           p_purchase_id: string;
           p_exchange_rate: number;
           p_freight_cost_brl: number;
-          p_sale_prices: Json;
+          p_items: Json;
         };
         Returns: undefined;
       };

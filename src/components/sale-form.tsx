@@ -23,10 +23,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-type Product = Pick<
-  Tables<"products_catalog_v">,
-  "id" | "name" | "brand" | "current_sale_price" | "stock_quantity"
->;
+type Product = Pick<Tables<"products_catalog_v">, "id" | "name" | "brand" | "stock_quantity"> & {
+  current_sale_price: number;
+};
 
 type ItemRow = {
   key: string;
@@ -52,13 +51,17 @@ function useActiveProducts() {
     queryFn: async () => {
       // Tela do vendedor: sempre via products_catalog_v (RF10) — nunca a tabela
       // base, que esconde custo/margem mesmo do próprio front do vendedor.
+      // current_sale_price pode ser null (produto sem nenhuma compra
+      // remanescente, ver recompute_product_pricing() no banco) — um produto
+      // nessas condições não pode ser vendido, então nem aparece aqui.
       const { data, error } = await supabase
         .from("products_catalog_v")
         .select("id, name, brand, current_sale_price, stock_quantity")
         .eq("active", true)
+        .not("current_sale_price", "is", null)
         .order("name", { ascending: true });
       if (error) throw error;
-      return data as Product[];
+      return (data ?? []) as Product[];
     },
   });
 }
