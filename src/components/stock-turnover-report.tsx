@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { differenceInCalendarDays, format, subDays } from "date-fns";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label";
 
 type Product = Pick<
   Tables<"products_catalog_v">,
-  "id" | "name" | "brand" | "stock_quantity" | "last_purchase_date"
+  "id" | "name" | "brand" | "stock_quantity" | "last_purchase_date" | "current_sale_price"
 >;
 type Sale = Pick<Tables<"sales">, "id" | "sale_date">;
 type SaleItem = Pick<
@@ -25,7 +26,7 @@ function useProducts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products_catalog_v")
-        .select("id, name, brand, stock_quantity, last_purchase_date")
+        .select("id, name, brand, stock_quantity, last_purchase_date, current_sale_price")
         .eq("active", true)
         .order("name", { ascending: true });
       if (error) throw error;
@@ -93,7 +94,8 @@ type ProductStats = {
 // (RLS já dá select livre em products/sales/sale_items para este papel), o
 // cálculo é feito no cliente a partir dos dados já liberados pelo RLS, no
 // mesmo espírito de outras telas do master que filtram/agrupam em JS
-// (ex: purchase-correction-panel).
+// (ex: purchase-correction-panel). Também mostra, quando houver, o alerta de
+// "produtos sem preço de referência" (pendência de RF04/RF13, seção 18).
 export function StockTurnoverReport() {
   const today = useMemo(() => new Date(), []);
   const [dateFrom, setDateFrom] = useState(() => format(subDays(today, 30), "yyyy-MM-dd"));
@@ -178,6 +180,17 @@ export function StockTurnoverReport() {
 
   const maxSold = bestSellers[0]?.soldInPeriod ?? 0;
 
+  // RF04/RF13 (seção 18 do PROGRESSO): um produto ativo pode ficar com
+  // current_sale_price/current_unit_cost_brl = null quando não sobra nenhuma
+  // compra dele (ex: a única compra foi excluída) — ele some das telas de
+  // venda, mas até então o master só percebia olhando o Catálogo produto a
+  // produto. Este alerta o avisa proativamente aqui, no relatório que ele já
+  // consulta para decidir o que comprar.
+  const productsWithoutPrice = useMemo(
+    () => (products.data ?? []).filter((p) => p.current_sale_price === null),
+    [products.data],
+  );
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -222,6 +235,34 @@ export function StockTurnoverReport() {
           />
         </div>
       </div>
+
+      {productsWithoutPrice.length > 0 && (
+        <section className="rounded-xl border border-warning/30 bg-warning/10 p-4">
+          <h3 className="font-display text-lg font-medium text-warning">
+            Produtos sem preço de referência
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Sem nenhuma compra registrada em aberto, estes produtos ficaram sem custo/preço de venda
+            calculado e por isso não aparecem para venda. Registre uma nova compra para colocá-los
+            de volta ao catálogo de vendas.
+          </p>
+          <ul className="mt-3 divide-y divide-hairline">
+            {productsWithoutPrice.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-4 py-2 text-sm">
+                <span>
+                  {p.name} · {p.brand}
+                </span>
+                <Link
+                  to="/master/compras/nova"
+                  className="text-wine underline-offset-4 hover:underline"
+                >
+                  Registrar compra
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="space-y-3">
         <h3 className="font-display text-lg font-medium">Mais vendidos no período</h3>
