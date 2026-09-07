@@ -29,7 +29,7 @@ export function DashboardShell({
           Sair
         </Button>
       </header>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row">
+      <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row">
         {navItems.length > 0 && (
           <nav className="flex gap-2 overflow-x-auto border-b border-hairline pb-2 lg:w-48 lg:flex-none lg:flex-col lg:border-b-0 lg:border-r lg:pb-0 lg:pr-4">
             {navItems.map((item) =>
