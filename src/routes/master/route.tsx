@@ -17,8 +17,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Compras", to: "/master/compras/nova" },
   { label: "Estoque" },
   { label: "Devolução de Venda", to: "/master/vendas/devolucao" },
-  { label: "Encomendas" },
-  { label: "Relatórios" },
+  { label: "Encomendas", to: "/master/encomendas" },
+  { label: "Relatórios", to: "/master/relatorios" },
   { label: "Usuários" },
 ];
 

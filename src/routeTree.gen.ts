@@ -14,7 +14,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MasterRouteRouteImport } from './routes/master/route'
 import { Route as VendedorRouteRouteImport } from './routes/vendedor/route'
 import { Route as MasterIndexRouteImport } from './routes/master/index'
+import { Route as MasterEncomendasRouteImport } from './routes/master/encomendas'
+import { Route as MasterRelatoriosRouteImport } from './routes/master/relatorios'
 import { Route as VendedorIndexRouteImport } from './routes/vendedor/index'
+import { Route as VendedorEncomendasRouteImport } from './routes/vendedor/encomendas'
 import { Route as MasterCatalogoIndexRouteImport } from './routes/master/catalogo/index'
 import { Route as MasterCatalogoProductIdRouteImport } from './routes/master/catalogo/$productId'
 import { Route as MasterCatalogoNovoRouteImport } from './routes/master/catalogo/novo'
@@ -48,9 +51,24 @@ const MasterIndexRoute = MasterIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MasterRouteRoute,
 } as any)
+const MasterEncomendasRoute = MasterEncomendasRouteImport.update({
+  id: '/encomendas',
+  path: '/encomendas',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
+const MasterRelatoriosRoute = MasterRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => MasterRouteRoute,
+} as any)
 const VendedorIndexRoute = VendedorIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => VendedorRouteRoute,
+} as any)
+const VendedorEncomendasRoute = VendedorEncomendasRouteImport.update({
+  id: '/encomendas',
+  path: '/encomendas',
   getParentRoute: () => VendedorRouteRoute,
 } as any)
 const MasterCatalogoIndexRoute = MasterCatalogoIndexRouteImport.update({
@@ -94,6 +112,9 @@ export interface FileRoutesByFullPath {
   '/master': typeof MasterRouteRouteWithChildren
   '/vendedor': typeof VendedorRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/master/encomendas': typeof MasterEncomendasRoute
+  '/master/relatorios': typeof MasterRelatoriosRoute
+  '/vendedor/encomendas': typeof VendedorEncomendasRoute
   '/master/': typeof MasterIndexRoute
   '/vendedor/': typeof VendedorIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
@@ -107,6 +128,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/master/encomendas': typeof MasterEncomendasRoute
+  '/master/relatorios': typeof MasterRelatoriosRoute
+  '/vendedor/encomendas': typeof VendedorEncomendasRoute
   '/master': typeof MasterIndexRoute
   '/vendedor': typeof VendedorIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
@@ -123,6 +147,9 @@ export interface FileRoutesById {
   '/master': typeof MasterRouteRouteWithChildren
   '/vendedor': typeof VendedorRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/master/encomendas': typeof MasterEncomendasRoute
+  '/master/relatorios': typeof MasterRelatoriosRoute
+  '/vendedor/encomendas': typeof VendedorEncomendasRoute
   '/master/': typeof MasterIndexRoute
   '/vendedor/': typeof VendedorIndexRoute
   '/master/catalogo/$productId': typeof MasterCatalogoProductIdRoute
@@ -140,6 +167,9 @@ export interface FileRouteTypes {
     | '/master'
     | '/vendedor'
     | '/login'
+    | '/master/encomendas'
+    | '/master/relatorios'
+    | '/vendedor/encomendas'
     | '/master/'
     | '/vendedor/'
     | '/master/catalogo/$productId'
@@ -153,6 +183,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/master/encomendas'
+    | '/master/relatorios'
+    | '/vendedor/encomendas'
     | '/master'
     | '/vendedor'
     | '/master/catalogo/$productId'
@@ -168,6 +201,9 @@ export interface FileRouteTypes {
     | '/master'
     | '/vendedor'
     | '/login'
+    | '/master/encomendas'
+    | '/master/relatorios'
+    | '/vendedor/encomendas'
     | '/master/'
     | '/vendedor/'
     | '/master/catalogo/$productId'
@@ -223,11 +259,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MasterIndexRouteImport
       parentRoute: typeof MasterRouteRoute
     }
+    '/master/encomendas': {
+      id: '/master/encomendas'
+      path: '/encomendas'
+      fullPath: '/master/encomendas'
+      preLoaderRoute: typeof MasterEncomendasRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
+    '/master/relatorios': {
+      id: '/master/relatorios'
+      path: '/relatorios'
+      fullPath: '/master/relatorios'
+      preLoaderRoute: typeof MasterRelatoriosRouteImport
+      parentRoute: typeof MasterRouteRoute
+    }
     '/vendedor/': {
       id: '/vendedor/'
       path: '/'
       fullPath: '/vendedor/'
       preLoaderRoute: typeof VendedorIndexRouteImport
+      parentRoute: typeof VendedorRouteRoute
+    }
+    '/vendedor/encomendas': {
+      id: '/vendedor/encomendas'
+      path: '/encomendas'
+      fullPath: '/vendedor/encomendas'
+      preLoaderRoute: typeof VendedorEncomendasRouteImport
       parentRoute: typeof VendedorRouteRoute
     }
     '/master/catalogo/': {
@@ -283,6 +340,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface MasterRouteRouteChildren {
+  MasterEncomendasRoute: typeof MasterEncomendasRoute
+  MasterRelatoriosRoute: typeof MasterRelatoriosRoute
   MasterIndexRoute: typeof MasterIndexRoute
   MasterCatalogoProductIdRoute: typeof MasterCatalogoProductIdRoute
   MasterCatalogoNovoRoute: typeof MasterCatalogoNovoRoute
@@ -293,6 +352,8 @@ interface MasterRouteRouteChildren {
 }
 
 const MasterRouteRouteChildren: MasterRouteRouteChildren = {
+  MasterEncomendasRoute: MasterEncomendasRoute,
+  MasterRelatoriosRoute: MasterRelatoriosRoute,
   MasterIndexRoute: MasterIndexRoute,
   MasterCatalogoProductIdRoute: MasterCatalogoProductIdRoute,
   MasterCatalogoNovoRoute: MasterCatalogoNovoRoute,
@@ -307,11 +368,13 @@ const MasterRouteRouteWithChildren = MasterRouteRoute._addFileChildren(
 )
 
 interface VendedorRouteRouteChildren {
+  VendedorEncomendasRoute: typeof VendedorEncomendasRoute
   VendedorIndexRoute: typeof VendedorIndexRoute
   VendedorVendasNovaRoute: typeof VendedorVendasNovaRoute
 }
 
 const VendedorRouteRouteChildren: VendedorRouteRouteChildren = {
+  VendedorEncomendasRoute: VendedorEncomendasRoute,
   VendedorIndexRoute: VendedorIndexRoute,
   VendedorVendasNovaRoute: VendedorVendasNovaRoute,
 }

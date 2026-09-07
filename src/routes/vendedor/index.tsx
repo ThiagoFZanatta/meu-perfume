@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -58,13 +57,8 @@ function VendedorDashboard() {
         <Button size="lg" className="h-14 text-base" asChild>
           <Link to="/vendedor/vendas/nova">Registrar Venda</Link>
         </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          className="h-14 text-base"
-          onClick={() => toast("Em breve")}
-        >
-          Cadastrar Encomenda
+        <Button size="lg" variant="outline" className="h-14 text-base" asChild>
+          <Link to="/vendedor/encomendas">Cadastrar Encomenda</Link>
         </Button>
       </div>
 
