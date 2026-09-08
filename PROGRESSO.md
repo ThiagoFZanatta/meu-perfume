@@ -269,6 +269,8 @@ Com os itens 1 a 8 todos resolvidos, não há mais nenhuma pendência conhecida 
 
 **Atualização (seção 25):** essa rodada de validação real foi concluída pelo dono do negócio no preview da Lovable, com resultado positivo em todos os itens. **O V1 (MVP) está, portanto, encerrado** — sem pendências conhecidas. O próximo passo é a Fase 2 do roadmap (seção 12 do PRD): RF11 (Despesas Gerais) e RF12 (DRE + Fluxo de Caixa).
 
+**Atualização (seção 31):** Fase 2 (RF11/RF12) e o ajuste do PRD v1.1 (RF03 — recálculo de preço ao editar markup) também foram validados pelo dono do negócio no preview real da Lovable, com resultado positivo. Não há mais nenhuma pendência de validação conhecida registrada neste documento.
+
 ## Riscos e observações
 
 - **Ambiente de build**: o registro npm privado da Lovable (`europe-west1-npm.pkg.dev`) não é alcançável a partir deste sandbox do Claude Code; a instalação de dependências para validação local foi feita via registro público do npm (não commitado). `bun.lock` continua sendo a fonte da verdade para o pipeline real da Lovable.
@@ -348,3 +350,10 @@ Com os itens 1 a 8 todos resolvidos, não há mais nenhuma pendência conhecida 
 - **Resultado:** o dono do negócio validou manualmente os itens 1 a 5 no preview real da Lovable (contra o Lovable Cloud/Supabase de produção do projeto) e confirmou que tudo funcionou conforme esperado — sem divergências reportadas em relação aos critérios de aceite do PRD (seção 7).
 - **Conclusão:** com isso, todo o escopo *Must Have* — V1/MVP (PRD, seções 5 e 12) está implementado **e** validado de ponta a ponta contra o ambiente real, não só testado isoladamente/simulado. Não há mais nenhuma pendência conhecida de V1 neste documento.
 - **Próximo passo, pelo roadmap do próprio PRD (seção 12):** a Fase 2 (V1.1 — RF11/RF12: Despesas Gerais, DRE, Fluxo de Caixa) é a próxima entrega no MoSCoW (🟡 Should Have), condicionada pelo PRD a "V1 estar em uso real por pelo menos algumas semanas, para gerar dados confiáveis" (seção 12) — ou seja, o código da Fase 2 pode começar a ser construído a qualquer momento, mas os relatórios (DRE/fluxo de caixa) só passam a fazer sentido depois de um período de uso real gerando dados de compras/vendas/despesas.
+
+### 31. Validação real no preview da Lovable — Fase 2 (RF11/RF12) e RF03 v1.1 (recálculo de markup) confirmados
+
+- **Contexto:** depois do V1 (MVP) encerrado (seção 25), duas entregas ainda estavam implementadas mas sem nenhum exercício contra o Supabase/Lovable Cloud real: (1) Fase 2 completa — Despesas Gerais, DRE e Fluxo de Caixa (seções 26/27), incluindo a correção de estabilidade do CMV; (2) o ajuste do PRD v1.1 na Tela 5 — recálculo do preço de venda sugerido ao editar o markup de um produto já comprado (seção 30).
+- **Resultado:** o dono do negócio validou manualmente os dois itens no preview real da Lovable (contra o Lovable Cloud/Supabase de produção do projeto) e confirmou que tudo funcionou conforme esperado — sem divergências reportadas em relação aos critérios de aceite do PRD (seção 7).
+- **Conclusão:** com isso, não há mais nenhuma pendência de validação conhecida registrada neste documento. V1 (MVP) e Fase 2 (RF11/RF12), incluindo o ajuste v1.1 de RF03, estão implementados **e** validados de ponta a ponta contra o ambiente real.
+- **Próximo passo:** pelo roadmap do PRD (seção 12), só resta o **V2 (Futuro / Could Have)** — cadastro de nome/contato do cliente na venda, limite mínimo de estoque configurável por produto (hoje fixo em 1 para todos) e integrações de IA (seção 10: sugestão de reposição, resumo em linguagem natural da DRE, sugestão de desconto). Nenhum desses tem requisito fechado no PRD ainda — fica a critério do dono do negócio decidir, com base no uso real do sistema, se e quando priorizar algum deles.
