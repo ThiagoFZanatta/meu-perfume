@@ -1,7 +1,8 @@
 # PRD — Sistema de Controle de Compra e Venda de Perfumes
 
-**Versão:** 1.0
+**Versão:** 1.1
 **Data:** Setembro/2026
+**Changelog v1.1:** adicionado a RF03/Tela 5 o recálculo do preço de venda sugerido quando o markup de um produto já comprado é editado (com confirmação do master antes de salvar), fechando um gap identificado em uso real — antes, editar o markup só valia para a próxima compra.
 **Stack alvo:** Lovable (frontend/lógica) → Supabase (dados/auth) → IA (funcionalidades inteligentes, futuro) → Claude Code/GitHub (customizações)
 
 ---
@@ -218,12 +219,14 @@ O sistema proposto substitui a planilha por uma ferramenta web (responsiva, uso 
 4. Gênero: masculino / feminino / unissex (obrigatório)
 5. ML (obrigatório — cada ml é um produto/SKU distinto)
 6. Markup (%) sobre o custo (obrigatório, configurável por produto — usado para sugerir o preço de venda a cada compra)
-7. Descrição (opcional)
-8. Toggle "Produto ativo" (visível apenas na edição, não no cadastro — todo produto novo nasce ativo)
-9. Botão "Salvar" (ação principal)
+7. **Novo preço de venda sugerido** (somente na edição, e somente se o produto já possuir `current_unit_cost_brl` definido — ou seja, já teve ao menos uma compra): campo somente-leitura recalculado em tempo real conforme o markup digitado (`current_unit_cost_brl × (1 + markup_%)`), com campo editável ao lado para o master aceitar a sugestão ou ajustar manualmente antes de salvar — mesmo padrão da Tela 6
+8. Descrição (opcional)
+9. Toggle "Produto ativo" (visível apenas na edição, não no cadastro — todo produto novo nasce ativo)
+10. Botão "Salvar" (ação principal)
 
 **Comportamento esperado:**
-- Custo e preço de venda final **não** são definidos aqui — o custo vem do módulo de Compras (Tela 6), que também usa o markup cadastrado aqui para sugerir um preço de venda a cada nova compra (ver Tela 6). O desconto pontual continua sendo decidido na hora da venda.
+- Custo e preço de venda final **não** são definidos aqui a partir do zero — o custo vem do módulo de Compras (Tela 6), que também usa o markup cadastrado aqui para sugerir um preço de venda a cada nova compra (ver Tela 6). O desconto pontual continua sendo decidido na hora da venda.
+- **Recálculo do preço sugerido ao editar o markup:** se o produto já tem `current_unit_cost_brl` definido, alterar o markup recalcula e exibe o novo preço de venda sugerido antes de salvar (elemento 7 acima). O master pode aceitar a sugestão ou digitar outro valor. Ao confirmar o salvamento, o valor final (sugerido ou ajustado) é gravado em `current_sale_price`, refletindo imediatamente no Catálogo (Tela 4) e no Estoque (Tela 7) — sem exigir uma nova compra. Se o produto nunca teve compra (`current_unit_cost_brl is null`), a edição do markup não recalcula nada, pois não há custo para basear uma sugestão.
 - Ao inativar um produto, ele deixa de aparecer nas telas de Venda e no Estoque do vendedor, mas seu histórico de compras/vendas continua acessível ao master (Catálogo, Relatórios).
 - Imagem enviada para Supabase Storage; produto salvo na tabela `products`.
 - Validação: nome, marca, gênero, ml e markup são obrigatórios antes de salvar.
@@ -232,7 +235,7 @@ O sistema proposto substitui a planilha por uma ferramenta web (responsiva, uso 
 - Vazio (novo produto): formulário em branco.
 - Erro: campos obrigatórios não preenchidos → destaque em vermelho com mensagem.
 - Carregando: botão "Salvar" com spinner durante upload da imagem.
-- Sucesso: confirmação visual + retorno ao Catálogo (Tela 4).
+- Sucesso: confirmação visual + retorno ao Catálogo (Tela 4); se o preço sugerido foi recalculado, a confirmação deixa claro que o preço de venda do produto foi atualizado.
 
 **Identidade visual:** Definida na seção 14 — Identidade Visual.
 
@@ -458,7 +461,8 @@ O sistema proposto substitui a planilha por uma ferramenta web (responsiva, uso 
 ### RF03 — Cadastro de Produtos
 - Master pode criar, editar e visualizar produtos com nome, marca, gênero, ml, imagem, markup (%) e descrição.
 - Master pode inativar um produto (ex: descontinuado pelo fornecedor); produto inativo some das telas de venda e do catálogo do vendedor, mas seu histórico de compras/vendas permanece intacto e consultável pelo master.
-- **Critério de aceite:** produto não pode ser salvo sem nome, marca, gênero, ml e markup preenchidos; um produto inativado não aparece para seleção em novas vendas, mas continua aparecendo em relatórios e históricos.
+- **Recálculo do preço sugerido ao editar markup:** se o produto editado já possui `current_unit_cost_brl` definido (já teve ao menos uma compra), o sistema calcula e exibe o novo preço de venda sugerido (`current_unit_cost_brl × (1 + novo markup)`) antes de salvar, em campo editável — o master aceita a sugestão ou ajusta manualmente. Se não houver `current_unit_cost_brl` (produto nunca comprado), nenhum recálculo é disparado.
+- **Critério de aceite:** produto não pode ser salvo sem nome, marca, gênero, ml e markup preenchidos; um produto inativado não aparece para seleção em novas vendas, mas continua aparecendo em relatórios e históricos; ao editar o markup de um produto com custo vigente definido, o `current_sale_price` gravado ao salvar reflete o valor confirmado (sugerido ou ajustado) pelo master, visível imediatamente no Catálogo.
 
 ### RF04 — Registro de Compras
 - Master registra compras informando data, produto(s), quantidade, preço unitário USD, taxa de câmbio e frete.
