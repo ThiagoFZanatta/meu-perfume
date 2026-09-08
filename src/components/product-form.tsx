@@ -56,7 +56,22 @@ export function ProductForm({ product }: { product?: Product }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isValid = Boolean(name.trim() && brand.trim() && gender && ml && markupPercent);
+  // RF03 (v1.1) — recálculo do preço de venda sugerido ao editar o markup:
+  // só se aplica na edição de um produto que já teve ao menos uma compra
+  // (current_unit_cost_brl definido). Cadastro novo nunca mostra este campo.
+  const currentUnitCostBrl = product?.current_unit_cost_brl ?? null;
+  const showSuggestedPrice = isEdit && currentUnitCostBrl != null;
+  const [salePrice, setSalePrice] = useState(product?.current_sale_price?.toString() ?? "");
+  const [salePriceTouched, setSalePriceTouched] = useState(false);
+
+  const suggestedSalePrice =
+    currentUnitCostBrl != null
+      ? Math.round(currentUnitCostBrl * (1 + (Number(markupPercent) || 0) / 100) * 100) / 100
+      : 0;
+
+  const isValid =
+    Boolean(name.trim() && brand.trim() && gender && ml && markupPercent) &&
+    (!showSuggestedPrice || (salePriceTouched ? Number(salePrice) > 0 : suggestedSalePrice > 0));
 
   function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -68,7 +83,11 @@ export function ProductForm({ product }: { product?: Product }) {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!isValid || !gender) {
-      setError("Preencha nome, marca, gênero, ml e markup antes de salvar.");
+      setError(
+        showSuggestedPrice
+          ? "Preencha nome, marca, gênero, ml, markup e o preço de venda antes de salvar."
+          : "Preencha nome, marca, gênero, ml e markup antes de salvar.",
+      );
       return;
     }
 
@@ -105,10 +124,16 @@ export function ProductForm({ product }: { product?: Product }) {
       image_url: imageUrl,
     };
 
+    const finalSalePrice = salePriceTouched ? Number(salePrice) : suggestedSalePrice;
+
     const { error: saveError } = isEdit
       ? await supabase
           .from("products")
-          .update({ ...payload, active })
+          .update({
+            ...payload,
+            active,
+            ...(showSuggestedPrice ? { current_sale_price: finalSalePrice } : {}),
+          })
           .eq("id", id)
       : await supabase.from("products").insert({ id, ...payload });
 
@@ -133,7 +158,13 @@ export function ProductForm({ product }: { product?: Product }) {
       }
     }
 
-    toast.success(isEdit ? "Produto atualizado." : "Produto cadastrado.");
+    toast.success(
+      showSuggestedPrice
+        ? `Produto atualizado. Preço de venda: R$ ${finalSalePrice.toFixed(2)}.`
+        : isEdit
+          ? "Produto atualizado."
+          : "Produto cadastrado.",
+    );
     navigate({ to: "/master/catalogo" });
   }
 
@@ -207,6 +238,29 @@ export function ProductForm({ product }: { product?: Product }) {
           />
         </div>
       </div>
+
+      {showSuggestedPrice && (
+        <div className="space-y-1.5 sm:max-w-xs">
+          <Label htmlFor="sale-price">Novo preço de venda sugerido (R$) *</Label>
+          <Input
+            id="sale-price"
+            type="number"
+            min="0"
+            step="0.01"
+            className="tabular"
+            value={salePriceTouched ? salePrice : suggestedSalePrice.toFixed(2)}
+            onChange={(e) => {
+              setSalePrice(e.target.value);
+              setSalePriceTouched(true);
+            }}
+            required
+          />
+          <p className="text-xs text-muted-foreground">
+            Sugerido a partir do custo unitário vigente (R$ {currentUnitCostBrl!.toFixed(2)}) ×
+            markup. Ajuste se quiser usar outro valor.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <Label htmlFor="description">Descrição</Label>
